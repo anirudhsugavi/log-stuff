@@ -1,4 +1,4 @@
-import { isValidEmail, isStrongPassword } from '../../src/validator/validator';
+import { isValidEmail, isStrongPassword, isValidUsername } from '../../src/validator/validator';
 
 describe('Email validator', () => {
   it.each([
@@ -7,7 +7,7 @@ describe('Email validator', () => {
     expect(isValidEmail(email)).toBeFalsy();
   });
 
-  it('Valid email', () => {
+  it('valid email', () => {
     expect(isValidEmail('someone@some-domain.com')).toBeTruthy();
   });
 });
@@ -19,7 +19,19 @@ describe('Strong password validator', () => {
     expect(isStrongPassword(password)).toBeFalsy();
   });
 
-  it('Valid password', () => {
+  it('valid password', () => {
     expect(isStrongPassword('Val|dP4ssword')).toBeTruthy();
+  });
+});
+
+describe('Username validator', () => {
+  it.each([
+    'abcd', 'no-special_ch@rs', 'No-āccents',
+  ])('when username is "%s"', (username) => {
+    expect(isValidUsername(username)).toBeFalsy();
+  });
+
+  it('valid username', () => {
+    expect(isValidUsername('Valid-user_name')).toBeTruthy();
   });
 });

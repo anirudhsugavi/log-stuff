@@ -13,3 +13,7 @@ export function isStrongPassword(password: string): boolean {
     minSymbols: 1,
   });
 }
+
+export function isValidUsername(username: string): boolean {
+  return username.length >= 6 && /^[\w-]+$/.test(username);
+}
