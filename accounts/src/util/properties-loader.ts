@@ -2,7 +2,7 @@ import dotenv from 'dotenv';
 import path from 'path';
 
 const CONFIG_HOME = '../../config';
-const ENV = process.env.NODE_ENV ?? 'prod';
+const ENV = process.env.NODE_ENV ?? 'dev';
 
 // env files are in root/config/
 const getAbsolutePath = (relative: string): string => {
@@ -18,11 +18,11 @@ if (ENV.toLowerCase() !== 'prod') {
 
 export default {
   APP_ENV: ENV.toLowerCase(),
-  APP_PORT: process.env.APP_PORT ?? 3001,
-  MONGO_URL: process.env.MONGO_URL ?? '',
-  MONGO_USERNAME: process.env.MONGO_USERNAME,
-  MONGO_PASSWORD: process.env.MONGO_PASSWORD,
-  MONGO_DB_NAME: process.env.MONGO_DB_NAME,
-  MONGO_DB_AUTH_SOURCE: process.env.MONGO_DB_AUTH_SOURCE,
-  LOGS_BASE_FOLDER: process.env.LOGS_BASE_FOLDER ?? '/tmp/accounts',
+  APP_PORT: process.env.APP_PORT as string,
+  MONGO_URL: process.env.MONGO_URL as string,
+  MONGO_USERNAME: process.env.MONGO_USERNAME as string,
+  MONGO_PASSWORD: process.env.MONGO_PASSWORD as string,
+  MONGO_DB_NAME: process.env.MONGO_DB_NAME as string,
+  MONGO_DB_AUTH_SOURCE: process.env.MONGO_DB_AUTH_SOURCE as string,
+  LOGS_BASE_FOLDER: process.env.LOGS_BASE_FOLDER as string,
 };
