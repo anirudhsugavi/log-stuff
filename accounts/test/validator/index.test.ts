@@ -1,4 +1,4 @@
-import { isValidEmail, isStrongPassword, isValidUsername } from '../../src/validator/validator';
+import { isValidEmail, isStrongPassword, isValidUsername } from '../../src/validator';
 
 describe('Email validator', () => {
   it.each([
