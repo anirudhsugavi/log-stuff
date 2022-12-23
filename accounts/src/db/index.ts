@@ -1,13 +1,12 @@
 import mongoose from 'mongoose';
 import props from '../util/properties-loader';
+import logger from '../util/logger';
 
 const { MONGO_URL, MONGO_USERNAME, MONGO_PASSWORD, MONGO_DB_NAME, MONGO_DB_AUTH_SOURCE } = props;
 
-mongoose.set('strictQuery', false);
-
 export default async function connect(): Promise<typeof mongoose> {
   try {
-    console.log(MONGO_URL);
+    mongoose.set('strictQuery', false);
     const connection = await mongoose.connect(MONGO_URL, {
       user: MONGO_USERNAME,
       pass: MONGO_PASSWORD,
@@ -15,10 +14,10 @@ export default async function connect(): Promise<typeof mongoose> {
       authSource: MONGO_DB_AUTH_SOURCE,
       writeConcern: { w: 1 },
     });
-    console.log('Connected to DB on', MONGO_URL);
+    logger.info(`Connected to DB on '${MONGO_URL}'`);
     return connection;
   } catch (err) {
-    console.error('DB connection failed');
+    logger.error('DB connection failed');
     throw err;
   }
 }

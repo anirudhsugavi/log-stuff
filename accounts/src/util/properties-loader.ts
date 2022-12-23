@@ -17,10 +17,12 @@ if (ENV.toLowerCase() !== 'prod') {
 }
 
 export default {
-  APP_PORT: process.env.APP_PORT,
+  APP_ENV: ENV.toLowerCase(),
+  APP_PORT: process.env.APP_PORT ?? 3001,
   MONGO_URL: process.env.MONGO_URL ?? '',
   MONGO_USERNAME: process.env.MONGO_USERNAME,
   MONGO_PASSWORD: process.env.MONGO_PASSWORD,
   MONGO_DB_NAME: process.env.MONGO_DB_NAME,
   MONGO_DB_AUTH_SOURCE: process.env.MONGO_DB_AUTH_SOURCE,
+  LOGS_BASE_FOLDER: process.env.LOGS_BASE_FOLDER ?? '/tmp/accounts',
 };
