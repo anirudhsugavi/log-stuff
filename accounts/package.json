@@ -4,7 +4,7 @@
   "description": "Module to handle accounts, users and authentication/authorization",
   "main": "src/index.ts",
   "scripts": {
-    "build": "tsc --build",
+    "build": "rm -r ./dist/ && tsc --build",
     "test": "npm run build && jest"
   },
   "repository": {
