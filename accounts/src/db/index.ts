@@ -4,7 +4,7 @@ import logger from '../util/logger';
 
 const { MONGO_URL, MONGO_USERNAME, MONGO_PASSWORD, MONGO_DB_NAME, MONGO_DB_AUTH_SOURCE } = props;
 
-export default async function connect(): Promise<typeof mongoose> {
+export async function connect(): Promise<typeof mongoose> {
   try {
     mongoose.set('strictQuery', false);
     const connection = await mongoose.connect(MONGO_URL, {
@@ -20,4 +20,8 @@ export default async function connect(): Promise<typeof mongoose> {
     logger.error('DB connection failed');
     throw err;
   }
+}
+
+export async function disconnect(): Promise<void> {
+  return await mongoose.disconnect();
 }

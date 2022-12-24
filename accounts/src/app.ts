@@ -1,23 +1,40 @@
-import express, { Express, Request, Response } from 'express';
+import express, { Express } from 'express';
 import cors from 'cors';
-import dbConnection from './db';
+import { connect, disconnect } from './db';
 import props from './util/properties-loader';
 import logger from './util/logger';
 
-dbConnection().then(() => {
-  const app: Express = express();
+connect()
+  .then(() => {
+    const app: Express = express();
 
-  app.use(express.json());
-  app.use(cors());
-  app.listen(props.APP_PORT, () => {
-    logger.info(`Listening on port ${props.APP_PORT}`);
+    app.use(express.json());
+    app.use(cors());
+    app.listen(props.APP_PORT, () => {
+      logger.info(`Listening on port ${props.APP_PORT}`);
+    }).on('error', (err) => {
+      logger.error('Failed to start Auth Server', err);
+      exitApp();
+    }).on('close', () => {
+      logger.debug('Exiting Auth Server');
+      exitApp();
+    });
+  })
+  .catch(err => {
+    logger.error('Failed to start Auth Server.', err);
+    exitApp();
   });
 
-  app.get('/', (_: Request, res: Response) => {
-    logger.warn('some warning message');
-    res.json({ message: 'All setup!' });
-  });
-}).catch(err => {
-  logger.error('Failed to start Auth Server.');
-  logger.error(err);
-});
+const exitApp = (): void => {
+  disconnect()
+    .then(() => {
+      logger.debug('Disconnected from DB');
+      process.exit();
+    })
+    .catch((err) => {
+      logger.error('Error closing db connection', err);
+      process.exit();
+    });
+};
+
+process.on('SIGINT', exitApp);
