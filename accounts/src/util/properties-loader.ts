@@ -24,5 +24,4 @@ export default {
   MONGO_PASSWORD: process.env.MONGO_PASSWORD as string,
   MONGO_DB_NAME: process.env.MONGO_DB_NAME as string,
   MONGO_DB_AUTH_SOURCE: process.env.MONGO_DB_AUTH_SOURCE as string,
-  LOGS_BASE_FOLDER: process.env.LOGS_BASE_FOLDER as string,
 };

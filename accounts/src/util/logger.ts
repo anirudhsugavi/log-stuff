@@ -1,7 +1,8 @@
 import winston from 'winston';
 import props from './properties-loader';
 
-const { APP_ENV, LOGS_BASE_FOLDER } = props;
+const { combine, timestamp, printf, colorize } = winston.format;
+const { APP_ENV } = props;
 
 const levels = {
   error: 0,
@@ -26,16 +27,15 @@ const level = (): string => {
 
 winston.addColors(colors);
 
-const format = winston.format.combine(
-  winston.format.timestamp({ format: 'YYYY-MM-DD hh:mm:ss:SSS A' }),
-  winston.format.printf((info) => `${String(info.timestamp)} ${info.level}: ${String(info.message)}`)
+const format = combine(
+  timestamp({ format: 'YYYY-MM-DD hh:mm:ss:SSS A' }),
+  printf(({ timestamp, level, message, ...data }) => JSON.stringify({ timestamp, level, message, data }, null, 2))
 );
 
 const transports = [
   new winston.transports.Console({
-    format: winston.format.combine(winston.format.colorize({ all: true })),
+    format: combine(colorize({ all: true })),
   }),
-  new winston.transports.File({ filename: `${LOGS_BASE_FOLDER}/accounts.log`, format: winston.format.json() }),
 ];
 
 const logger = winston.createLogger({
