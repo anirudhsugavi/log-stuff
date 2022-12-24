@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  auth-mongo:
+    image: "mongo:${MONGO_VERSION:? mongo version not set}"
+    container_name: auth-mongo
+    ports:
+      - "${MONGO_PORT:? mongo port is not set}:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: "${MONGO_USERNAME:? mongo username not set}"
+      MONGO_INITDB_ROOT_PASSWORD: "${MONGO_PASSWORD:? mongo password not set}"
+    volumes:
+      - auth-mongo-db:/data/db
+    networks:
+      - auth-network
+
+volumes:
+  auth-mongo-db:
+
+
+networks:
+  auth-network:

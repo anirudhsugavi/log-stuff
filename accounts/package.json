@@ -1,0 +1,46 @@
+{
+  "name": "accounts",
+  "version": "1.0.0",
+  "description": "Module to handle accounts, users and authentication/authorization",
+  "main": "./dist/src/app.js",
+  "scripts": {
+    "start": "node ./dist/app.js",
+    "build": "rm -r ./dist/ && tsc --build",
+    "test": "npm run build && jest",
+    "dev": "NODE_ENV=dev nodemon ./src/app.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/anirudhsugavi/log-stuff.git"
+  },
+  "author": "Anirudh Sugavi",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/anirudhsugavi/log-stuff/issues"
+  },
+  "homepage": "https://github.com/anirudhsugavi/log-stuff#readme",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "mongoose": "^6.8.1",
+    "validator": "^13.7.0",
+    "winston": "^3.8.2"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.20.7",
+    "@babel/preset-env": "^7.20.2",
+    "@types/cors": "^2.8.13",
+    "@types/express": "^4.17.15",
+    "@types/jest": "^29.2.4",
+    "@types/validator": "^13.7.10",
+    "babel-jest": "^29.3.1",
+    "eslint": "^8.30.0",
+    "eslint-config-standard-with-typescript": "^24.0.0",
+    "jest": "^29.3.1",
+    "nodemon": "^2.0.20",
+    "ts-jest": "^29.0.3",
+    "ts-node": "^10.9.1",
+    "typescript": "^4.9.4"
+  }
+}
