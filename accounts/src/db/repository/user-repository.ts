@@ -1,17 +1,19 @@
 import { hash, compare } from 'bcryptjs';
 import { IUser, User } from '../../models';
 import { NotFoundError } from '../../util/app-errors';
+import logger from '../../util/logger';
 
 const SALT_ROUND = 10;
 
 export class UserRepository {
   async createUser(user: IUser): Promise<IUser> {
-    user.password = await this.hashPassword(user.password);
+    logger.debug('creating user', user);
     const result = await User.create(user);
     return result;
   }
 
   async findUser({ _id, username, email }: IUser): Promise<IUser> {
+    logger.debug('find userById', { _id, username, email });
     const user = await User.findById(_id);
     if (user == null) {
       throw new NotFoundError({ description: `user ${username ?? email} not found` });
@@ -19,11 +21,22 @@ export class UserRepository {
     return user;
   }
 
+  async updateUser(existing: IUser, toUpdate: IUser): Promise<IUser> {
+    logger.debug('updating user', existing, toUpdate);
+    const user = await User.findByIdAndUpdate(existing._id, toUpdate);
+    if (user == null) {
+      throw new NotFoundError({ description: `user ${existing.username ?? existing.email} not found` });
+    }
+    return user;
+  }
+
   async hashPassword(password: string): Promise<string> {
+    logger.debug('hashing password', { 'salt-round': SALT_ROUND });
     return await hash(password, SALT_ROUND);
   }
 
   async comparePassword(unhashed: string, hashed: string): Promise<boolean> {
+    logger.debug('comparing passwords');
     return await compare(unhashed, hashed);
   }
 }
