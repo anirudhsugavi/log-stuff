@@ -1,4 +1,4 @@
-import { ObjectId, Document } from 'mongoose';
+import { Document } from 'mongoose';
 
 export interface IName {
   first?: string;
@@ -12,7 +12,6 @@ export enum IRole {
 }
 
 export interface IUser extends Document {
-  _id: ObjectId;
   email: string;
   password: string;
   username?: string;
@@ -21,10 +20,11 @@ export interface IUser extends Document {
   account: IAccount;
   roles: IRole[];
   avatar?: string;
+  deleted?: string;
 }
 
 export interface IAccount extends Document {
-  _id: ObjectId;
   name: string;
   settings?: Record<string, string>;
+  deleted?: string;
 }

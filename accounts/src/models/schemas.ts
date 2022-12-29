@@ -33,6 +33,7 @@ export const UserSchema = new Schema<IUser>({
   },
   roles: [RoleSchema],
   avatar: { type: String },
+  deleted: { type: Boolean, default: false },
 });
 
 export const AccountSchema = new Schema<IAccount>({
@@ -41,4 +42,5 @@ export const AccountSchema = new Schema<IAccount>({
     type: Types.Map,
     of: String,
   },
+  deleted: { type: Boolean, default: false },
 });
