@@ -1,9 +1,6 @@
-import { hash, compare } from 'bcryptjs';
 import { IUser, User } from '../../models';
 import { NotFoundError } from '../../util/app-errors';
 import logger from '../../util/logger';
-
-const SALT_ROUND = 10;
 
 export class UserRepository {
   async createUser(user: IUser): Promise<IUser> {
@@ -28,15 +25,5 @@ export class UserRepository {
       throw new NotFoundError({ description: `user ${existing.username ?? existing.email} not found` });
     }
     return user;
-  }
-
-  async hashPassword(password: string): Promise<string> {
-    logger.debug('hashing password', { 'salt-round': SALT_ROUND });
-    return await hash(password, SALT_ROUND);
-  }
-
-  async comparePassword(unhashed: string, hashed: string): Promise<boolean> {
-    logger.debug('comparing passwords');
-    return await compare(unhashed, hashed);
   }
 }

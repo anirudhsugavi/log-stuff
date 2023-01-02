@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node ./dist/app.js",
     "build": "rm -r ./dist/ && tsc --build",
-    "test": "npm run build && jest",
+    "test": "NODE_ENV=test npm run build && jest",
     "dev": "NODE_ENV=dev nodemon ./src/app.ts"
   },
   "repository": {
