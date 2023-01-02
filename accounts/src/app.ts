@@ -1,6 +1,7 @@
 import express, { Express } from 'express';
 import cors from 'cors';
 import { connect, disconnect } from './db';
+import authRouter from './routers/user-router';
 import props from './util/properties-loader';
 import logger from './util/logger';
 
@@ -10,6 +11,7 @@ connect()
 
     app.use(express.json());
     app.use(cors());
+    app.use(authRouter);
     app.listen(props.APP_PORT, () => {
       logger.info(`Listening on port ${props.APP_PORT}`);
     }).on('error', (err) => {
