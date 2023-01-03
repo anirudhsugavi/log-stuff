@@ -1,9 +1,10 @@
-import { hash, compare } from 'bcryptjs';
-import { BadRequestError } from './app-errors';
-import logger from './logger';
+const { hash, compare } = require('bcryptjs');
+const { BadRequestError } = require('./app-errors');
+const logger = require('./logger');
 
 const SALT_ROUND = 10;
-const requireNonNull = (...strings: string[]): void => {
+
+const requireNonNull = (...strings) => {
   if (strings.length < 1) {
     throw new BadRequestError({ description: 'insufficient number of arguments', errorStack: new RangeError() });
   }
@@ -18,14 +19,19 @@ const requireNonNull = (...strings: string[]): void => {
   });
 };
 
-export async function hashPassword(password: string): Promise<string> {
+async function hashPassword(password) {
   logger.debug('hashing password', { 'salt-round': SALT_ROUND });
   requireNonNull(password);
-  return await hash(password, SALT_ROUND);
+  return hash(password, SALT_ROUND);
 }
 
-export async function comparePassword(unhashed: string, hashed: string): Promise<boolean> {
+async function comparePassword(unhashed, hashed) {
   logger.debug('comparing passwords');
   requireNonNull(unhashed, hashed);
-  return await compare(unhashed, hashed);
+  return compare(unhashed, hashed);
+}
+
+module.exports = {
+  hashPassword,
+  comparePassword,
 };

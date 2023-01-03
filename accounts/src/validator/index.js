@@ -1,10 +1,10 @@
-import validator from 'validator';
+const validator = require('validator');
 
-export function isValidEmail(email: string): boolean {
+function isValidEmail(email) {
   return validator.isEmail(email);
 }
 
-export function isStrongPassword(password: string): boolean {
+function isStrongPassword(password) {
   return validator.isStrongPassword(password, {
     minLength: 6,
     minLowercase: 1,
@@ -14,6 +14,12 @@ export function isStrongPassword(password: string): boolean {
   });
 }
 
-export function isValidUsername(username: string): boolean {
+function isValidUsername(username) {
   return username.length >= 6 && /^[\w-]+$/.test(username);
 }
+
+module.exports = {
+  isValidEmail,
+  isStrongPassword,
+  isValidUsername,
+};
