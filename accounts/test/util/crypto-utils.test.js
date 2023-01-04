@@ -1,5 +1,5 @@
-import { hashPassword, comparePassword } from '../../src/util/crypto-util';
-import { BadRequestError } from '../../src/util/app-errors';
+const { hashPassword, comparePassword } = require('../../src/util/crypto-util');
+const { BadRequestError } = require('../../src/util/app-errors');
 
 const TEST_PLAIN = 'test1234';
 
