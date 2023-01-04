@@ -1,4 +1,4 @@
-import { hashPassword, comparePassword } from '../../src/util/crypto-utils';
+import { hashPassword, comparePassword } from '../../src/util/crypto-util';
 import { BadRequestError } from '../../src/util/app-errors';
 
 const TEST_PLAIN = 'test1234';

@@ -1,4 +1,4 @@
-import { isValidEmail, isStrongPassword, isValidUsername } from '../../src/validator';
+const { isValidEmail, isStrongPassword, isValidUsername } = require('../../src/validator');
 
 describe('Email validator', () => {
   it.each([
