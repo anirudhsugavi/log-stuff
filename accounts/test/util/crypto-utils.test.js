@@ -6,14 +6,12 @@ const TEST_PLAIN = 'test1234';
 describe('Hash password validation', () => {
   it('valid password', async () => {
     const hashed = await hashPassword(TEST_PLAIN);
-    expect(await comparePassword(TEST_PLAIN, hashed)).tobe(true);
+    expect(await comparePassword(TEST_PLAIN, hashed)).toBe(true);
   });
 
   it('invalid password', async () => {
     const hashed = await hashPassword(TEST_PLAIN);
-    // const result = await comparePassword('incorrect', hashed);
-    // expect(result).toBeFalsy();
-    expect(await comparePassword('incorrect', hashed)).tobe(false);
+    expect(await comparePassword('incorrect', hashed)).toBe(false);
   });
 
   it.each([
