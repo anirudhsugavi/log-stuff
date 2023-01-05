@@ -1,4 +1,5 @@
 const validator = require('validator');
+const { USER_ROLES } = require('../util/constants');
 
 function isValidEmail(email) {
   return email && validator.isEmail(email);
@@ -18,8 +19,13 @@ function isValidUsername(username) {
   return username && username.length >= 6 && /^[\w-]+$/.test(username);
 }
 
+function isValidRoles(roles) {
+  return roles && roles.every((role) => USER_ROLES.includes(role));
+}
+
 module.exports = {
   isValidEmail,
   isStrongPassword,
   isValidUsername,
+  isValidRoles,
 };

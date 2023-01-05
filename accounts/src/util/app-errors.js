@@ -1,4 +1,4 @@
-const StatusCode = require('./status-code');
+const StatusCode = require('./constants');
 
 class AppError extends Error {
   constructor(err) {

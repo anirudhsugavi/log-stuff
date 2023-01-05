@@ -1,4 +1,4 @@
-const { isValidEmail, isStrongPassword, isValidUsername } = require('../../src/validator');
+const { isValidEmail, isStrongPassword, isValidUsername, isValidRoles } = require('../../src/validator');
 
 describe('Email validator', () => {
   it.each([
@@ -33,5 +33,19 @@ describe('Username validator', () => {
 
   it('valid username', () => {
     expect(isValidUsername('Valid-user_name')).toBeTruthy();
+  });
+});
+
+describe('Roles validator', () => {
+  it.each([
+    [['invalid']], [['']], [['InVaLID', 'NOPE']], null, undefined,
+  ])('when roles is "%s"', (roles) => {
+    expect(isValidRoles(roles)).toBeFalsy();
+  });
+
+  it.each([
+    [['admin']], [['read', 'write']], [['read', 'write', 'delete']],
+  ])('when roles is "%s"', (roles) => {
+    expect(isValidRoles(roles)).toBeTruthy();
   });
 });
