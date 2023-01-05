@@ -1,11 +1,11 @@
 const validator = require('validator');
 
 function isValidEmail(email) {
-  return validator.isEmail(email);
+  return email && validator.isEmail(email);
 }
 
 function isStrongPassword(password) {
-  return validator.isStrongPassword(password, {
+  return password && validator.isStrongPassword(password, {
     minLength: 6,
     minLowercase: 1,
     minUppercase: 1,
@@ -15,7 +15,7 @@ function isStrongPassword(password) {
 }
 
 function isValidUsername(username) {
-  return username.length >= 6 && /^[\w-]+$/.test(username);
+  return username && username.length >= 6 && /^[\w-]+$/.test(username);
 }
 
 module.exports = {

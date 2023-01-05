@@ -2,7 +2,7 @@ const { isValidEmail, isStrongPassword, isValidUsername } = require('../../src/v
 
 describe('Email validator', () => {
   it.each([
-    'abc', '@gmail', 'abc@example', 'someone.com',
+    'abc', '@gmail', 'abc@example', 'someone.com', null, undefined,
   ])('when email is "%s"', (email) => {
     expect(isValidEmail(email)).toBeFalsy();
   });
@@ -14,7 +14,7 @@ describe('Email validator', () => {
 
 describe('Strong password validator', () => {
   it.each([
-    'short', 'NOLOWER', 'noupper', 'NoNumbers', 'n0Symbols',
+    'short', 'NOLOWER', 'noupper', 'NoNumbers', 'n0Symbols', null, undefined,
   ])('when password is "%s"', (password) => {
     expect(isStrongPassword(password)).toBeFalsy();
   });
@@ -26,7 +26,7 @@ describe('Strong password validator', () => {
 
 describe('Username validator', () => {
   it.each([
-    'abcd', 'no-special_ch@rs', 'No-āccents',
+    'abcd', 'no-special_ch@rs', 'No-āccents', null, undefined,
   ])('when username is "%s"', (username) => {
     expect(isValidUsername(username)).toBeFalsy();
   });
