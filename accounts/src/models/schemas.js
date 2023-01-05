@@ -1,26 +1,19 @@
-import { Schema, Types } from 'mongoose';
-import { IName, IUser, IRole, IAccount } from './types';
+const { Schema, Types } = require('mongoose');
 
-export const NameSchema = new Schema<IName>({
+const NameSchema = new Schema({
   first: { type: String },
   middle: { type: String },
   last: { type: String, required: [true, 'last name is required'] },
   nick: { type: String },
 });
 
-export const RoleSchema = new Schema<IRole>({
-  type: String,
-  required: [true, 'user should have roles'],
-  enum: ['read', 'write', 'delete', 'admin'],
-});
-
-export const UserSchema = new Schema<IUser>({
+const UserSchema = new Schema({
   email: { type: String, required: [true, 'email is required'], unique: true },
   password: { type: String, required: [true, 'password is required'] },
   username: {
     type: String,
     unique: true,
-    default: function (this: IUser) {
+    default() {
       return this.email;
     },
   },
@@ -31,16 +24,20 @@ export const UserSchema = new Schema<IUser>({
     ref: 'account',
     required: [true, 'user must be associated to an account'],
   },
-  roles: [RoleSchema],
+  roles: { type: [String], required: [true, 'user should have roles'] },
   avatar: { type: String },
   deleted: { type: Boolean, default: false },
 });
 
-export const AccountSchema = new Schema<IAccount>({
+const AccountSchema = new Schema({
   name: { type: String, required: [true, 'account name is required'] },
   settings: {
-    type: Types.Map,
+    type: Map,
     of: String,
   },
   deleted: { type: Boolean, default: false },
 });
+
+module.exports = {
+  NameSchema, UserSchema, AccountSchema,
+};
