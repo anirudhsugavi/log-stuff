@@ -1,13 +1,11 @@
+const { createNewUser, getUserById } = require('../services/user-service');
+
 const getUsers = (_, res) => {
   // todo
   res.json({ message: 'get users coming right up' });
 };
 
-const getUser = (req, res) => {
-  // todo
-  console.log(req.params.userId);
-  res.json({ message: 'get user coming right up' });
-};
+const getUser = getUserById;
 
 const deleteUser = (req, res) => {
   // todo
@@ -15,11 +13,7 @@ const deleteUser = (req, res) => {
   res.json({ message: 'delete user coming right up' });
 };
 
-const createUser = (req, res) => {
-  // todo
-  console.log(req.body);
-  res.json({ message: 'create user coming right up' });
-};
+const createUser = createNewUser;
 
 const updateUser = (req, res) => {
   // todo

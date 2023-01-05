@@ -1,9 +1,9 @@
-const account = require('./account');
-const schemas = require('./schemas');
-const user = require('./user');
+const Account = require('./account');
+const Schemas = require('./schemas');
+const User = require('./user');
 
 module.exports = {
-  account,
-  schemas,
-  user,
+  Account,
+  Schemas,
+  User,
 };

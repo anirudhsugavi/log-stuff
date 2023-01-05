@@ -7,12 +7,6 @@ const NameSchema = new Schema({
   nick: { type: String },
 });
 
-const RoleSchema = new Schema({
-  type: String,
-  required: [true, 'user should have roles'],
-  enum: ['read', 'write', 'delete', 'admin'],
-});
-
 const UserSchema = new Schema({
   email: { type: String, required: [true, 'email is required'], unique: true },
   password: { type: String, required: [true, 'password is required'] },
@@ -30,7 +24,7 @@ const UserSchema = new Schema({
     ref: 'account',
     required: [true, 'user must be associated to an account'],
   },
-  roles: [RoleSchema],
+  roles: { type: [String], required: [true, 'user should have roles'] },
   avatar: { type: String },
   deleted: { type: Boolean, default: false },
 });
@@ -38,12 +32,12 @@ const UserSchema = new Schema({
 const AccountSchema = new Schema({
   name: { type: String, required: [true, 'account name is required'] },
   settings: {
-    type: Types.Map,
+    type: Map,
     of: String,
   },
   deleted: { type: Boolean, default: false },
 });
 
 module.exports = {
-  NameSchema, RoleSchema, UserSchema, AccountSchema,
+  NameSchema, UserSchema, AccountSchema,
 };
