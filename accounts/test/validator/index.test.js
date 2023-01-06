@@ -1,4 +1,6 @@
-const { isValidEmail, isStrongPassword, isValidUsername, isValidRoles } = require('../../src/validator');
+const {
+  isValidEmail, isStrongPassword, isValidUsername, isValidRoles,
+} = require('../../src/validator');
 
 describe('Email validator', () => {
   it.each([

@@ -1,35 +1,26 @@
-const { createNewAccount } = require('./account-service');
+const { createNewAccount, findAccount } = require('./account-service');
 const { userRepo } = require('../db/repositories');
 const { BadRequestError } = require('../util/app-errors');
 const { hashPassword } = require('../util/crypto-util');
 const logger = require('../util/logger');
-const { BAD_REQUEST } = require('../util/status-code');
-const { isValidEmail, isStrongPassword, isValidUsername } = require('../validator');
-
-async function createNewUser(req, res) {
-  try {
-    const account = req.body.createAccount ? await createNewAccount(req.body.account)
-      : req.body.accountId;
-    const user = {
-      email: req.body.email,
-      password: await hashPassword(req.body.password),
-      name: req.body.name,
-      account,
-      roles: ['admin'],
-    };
-
-    const created = await userRepo.createUser(user);
-    res.json({ status: 'success', created });
-  } catch (err) {
-    const errors = handleErrors(err);
-    res.status(errors.statusCode)
-      .json({ status: 'failure', errors: errors.messages });
-  }
-}
+const {
+  isValidEmail, isStrongPassword, isValidUsername, isValidRoles,
+} = require('../validator');
 
 async function getUserById(req, res) {
   const user = await userRepo.findUser({ _id: req.params.userId });
   res.json({ status: 'success', user });
+}
+
+async function createNewUser({ user, createAccount }) {
+  validateInput(user);
+
+  const { password, account, ...newUser } = user;
+  newUser.password = await hashPassword(password);
+  newUser.account = createAccount ? await createDefaultAccount(user)
+    : await getAccount(account);
+
+  return userRepo.createUser(newUser);
 }
 
 function validateInput(user) {
@@ -48,34 +39,24 @@ function validateInput(user) {
   if (username && !isValidUsername(username)) {
     throw new BadRequestError({ description: 'special characters not allowed in username' });
   }
+
+  if (!isValidRoles(user.roles)) {
+    throw new BadRequestError({ description: 'invalid roles' });
+  }
 }
 
-function handleErrors(err) {
-  logger.error(err);
+async function createDefaultAccount(user) {
+  logger.debug('creating account for the user');
+  const account = user.account ?? { name: user.email };
+  return createNewAccount(account);
+}
 
-  const errors = { statusCode: 500, messages: {} };
-
-  // handle duplicate email
-  if (err.code === 11000) {
-    errors.statusCode = BAD_REQUEST;
-    errors.messages.email = 'email already exists';
+async function getAccount(account) {
+  if (!account?._id) {
+    throw new BadRequestError({ description: 'missing account id for creating a user' });
   }
 
-  // handle validation errors
-  if (err.message.includes('user validation failed')) {
-    errors.statusCode = BAD_REQUEST;
-    Object.values(err.errors).forEach(({ properties }) => {
-      errors.messages[properties.path] = properties.message;
-    });
-  }
-
-  // handle bad requests
-  if (err instanceof BadRequestError) {
-    errors.statusCode = err.statusCode;
-    errors.messages.message = err.description;
-  }
-
-  return errors;
+  return findAccount({ _id: account._id });
 }
 
 module.exports = {

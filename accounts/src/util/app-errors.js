@@ -1,4 +1,7 @@
-const StatusCode = require('./constants');
+const {
+  BAD_REQUEST, UNAUTHENTICATED, UNAUTHORIZED, NOT_FOUND, INTERNAL,
+} = require('./constants');
+const logger = require('./logger');
 
 class AppError extends Error {
   constructor(err) {
@@ -13,9 +16,9 @@ class AppError extends Error {
 
 class BadRequestError extends AppError {
   constructor({
-    statusCode = StatusCode.BAD_REQUEST,
+    statusCode = BAD_REQUEST,
     description = 'Bad request',
-    errorStack = new Error(),
+    errorStack = new Error().stack,
   }) {
     super({ statusCode, description, errorStack });
   }
@@ -23,9 +26,9 @@ class BadRequestError extends AppError {
 
 class UnauthenticatedError extends AppError {
   constructor({
-    statusCode = StatusCode.UNAUTHENTICATED,
+    statusCode = UNAUTHENTICATED,
     description = 'Unauthenticated',
-    errorStack = new Error(),
+    errorStack = new Error().stack,
   }) {
     super({ statusCode, description, errorStack });
   }
@@ -33,9 +36,9 @@ class UnauthenticatedError extends AppError {
 
 class UnauthorizedError extends AppError {
   constructor({
-    statusCode = StatusCode.UNAUTHORIZED,
+    statusCode = UNAUTHORIZED,
     description = 'Unauthorized',
-    errorStack = new Error(),
+    errorStack = new Error().stack,
   }) {
     super({ statusCode, description, errorStack });
   }
@@ -43,9 +46,9 @@ class UnauthorizedError extends AppError {
 
 class NotFoundError extends AppError {
   constructor({
-    statusCode = StatusCode.NOT_FOUND,
+    statusCode = NOT_FOUND,
     description = 'Not found',
-    errorStack = new Error(),
+    errorStack = new Error().stack,
   }) {
     super({ statusCode, description, errorStack });
   }
@@ -53,14 +56,59 @@ class NotFoundError extends AppError {
 
 class InternalError extends AppError {
   constructor({
-    statusCode = StatusCode.INTERNAL,
+    statusCode = INTERNAL,
     description = 'Internal server error',
-    errorStack = new Error(),
+    errorStack = new Error().stack,
   }) {
     super({ statusCode, description, errorStack });
   }
 }
 
+function handleErrors(err) {
+  logger.error(err);
+
+  // handle app errors
+  if (err instanceof AppError) {
+    return {
+      statusCode: err.statusCode,
+      messages: { message: err.description },
+    };
+  }
+
+  // handle duplicate email
+  if (err.code === 11000) {
+    return {
+      statusCode: BAD_REQUEST,
+      messages: { email: 'email already exists' },
+    };
+  }
+
+  // handle validation errors
+  if (err.message.includes('user validation failed')) {
+    const messages = {};
+    Object.values(err.errors).forEach(({ properties }) => {
+      messages[properties.path] = properties.message;
+    });
+
+    return {
+      statusCode: BAD_REQUEST,
+      messages,
+    };
+  }
+
+  // handle any other errors
+  return {
+    statusCode: INTERNAL,
+    messages: { message: err.message },
+  };
+}
+
 module.exports = {
-  AppError, BadRequestError, UnauthenticatedError, UnauthorizedError, NotFoundError, InternalError,
+  AppError,
+  BadRequestError,
+  UnauthenticatedError,
+  UnauthorizedError,
+  NotFoundError,
+  InternalError,
+  handleErrors,
 };

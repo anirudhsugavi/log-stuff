@@ -3,7 +3,7 @@ const { NotFoundError } = require('../../util/app-errors');
 const logger = require('../../util/logger');
 
 async function createUser(user) {
-  logger.debug('creating user', user);
+  logger.debug('creating user');
   const result = await User.create(user);
   return result;
 }
