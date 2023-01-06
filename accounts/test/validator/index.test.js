@@ -1,5 +1,5 @@
 const {
-  isValidEmail, isStrongPassword, isValidUsername, isValidRoles,
+  isValidEmail, isStrongPassword, isValidUsername, isValidRoles, isValidId,
 } = require('../../src/validator');
 
 describe('Email validator', () => {
@@ -49,5 +49,19 @@ describe('Roles validator', () => {
     [['admin']], [['read', 'write']], [['read', 'write', 'delete']],
   ])('when roles is "%s"', (roles) => {
     expect(isValidRoles(roles)).toBeTruthy();
+  });
+});
+
+describe('ID validator', () => {
+  it.each([
+    '123', '123abc', '1234567890abc', '1234567890ab1234567890zz', null, undefined,
+  ])('when ID is "%s"', (id) => {
+    expect(isValidId(id)).toBeFalsy();
+  });
+
+  it.each([
+    '1234567890ab', '1234567890ab1234567890ff',
+  ])('when ID is "%s"', (id) => {
+    expect(isValidId(id)).toBeTruthy();
   });
 });

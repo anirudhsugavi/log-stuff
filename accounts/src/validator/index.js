@@ -1,4 +1,5 @@
 const validator = require('validator');
+const { isValidObjectId } = require('mongoose');
 const { USER_ROLES } = require('../util/constants');
 
 function isValidEmail(email) {
@@ -23,9 +24,14 @@ function isValidRoles(roles) {
   return roles && roles.every((role) => USER_ROLES.includes(role));
 }
 
+function isValidId(id) {
+  return id && isValidObjectId(id);
+}
+
 module.exports = {
   isValidEmail,
   isStrongPassword,
   isValidUsername,
   isValidRoles,
+  isValidId,
 };
