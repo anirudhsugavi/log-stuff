@@ -1,7 +1,7 @@
 const accountService = require('./account-service');
 const { userRepo } = require('../db/repositories');
 const { BadRequestError, NotFoundError } = require('../util/app-errors');
-const { hashPassword, comparePassword, generateJwt } = require('../util/crypto-util');
+const { hashPassword, comparePassword, generateJwt, verifyJwt } = require('../util/crypto-util');
 const logger = require('../util/logger');
 const validator = require('../validator');
 const { EXPIRES_IN, TOKEN_ISSUER } = require('../util/constants');
@@ -50,19 +50,25 @@ async function createUser({ user, createAccount }) {
 }
 
 async function createToken({ email, username, password }) {
-  const user = email ? await getUser({ email }) : await getUser({ username });
+  const user = await getUser({ email, username });
   const result = await comparePassword(password, user.password);
   if (!result) {
     throw new BadRequestError({ description: 'incorrect password' });
   }
 
-  const token = await generateJwt(user);
   return {
     tokenType: 'Bearer',
-    accessToken: token,
+    accessToken: await generateJwt(user),
     expiresIn: EXPIRES_IN,
     issuer: TOKEN_ISSUER,
   };
+}
+
+async function authenticateUser({
+  _id, email, username, token,
+}) {
+  const user = await getUser({ _id, email, username });
+  await verifyJwt({ token, password: user.password });
 }
 
 async function createDefaultAccount(user) {
@@ -112,4 +118,5 @@ module.exports = {
   createUser,
   getUser,
   createToken,
+  authenticateUser,
 };

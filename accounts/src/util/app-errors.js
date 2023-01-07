@@ -106,6 +106,7 @@ function handleErrors(err) {
   }
 
   // handle any other errors
+  logger.error(err.stack);
   return {
     statusCode: INTERNAL,
     messages: { message: err.message },

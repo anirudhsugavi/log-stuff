@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const { connect, disconnect } = require('./db');
-const authRouter = require('./routers/user-router');
+const userRouter = require('./routers/user-router');
 const props = require('./util/properties-loader');
 const logger = require('./util/logger');
 
@@ -23,7 +23,7 @@ connect()
 
     app.use(express.json());
     app.use(cors());
-    app.use(authRouter);
+    app.use(userRouter);
     app.listen(props.APP_PORT, () => {
       logger.info(`Listening on port ${props.APP_PORT}`);
     }).on('error', (err) => {
