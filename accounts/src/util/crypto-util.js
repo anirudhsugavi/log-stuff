@@ -6,17 +6,20 @@ const { EXPIRES_IN, TOKEN_ISSUER } = require('./constants');
 
 const SALT_ROUND = 10;
 
-const requireNonNull = (...strings) => {
-  if (strings.length < 1) {
+const requireNonNull = (...args) => {
+  if (args.length < 1) {
     throw new BadRequestError({ description: 'insufficient number of arguments', errorStack: new RangeError() });
   }
 
-  strings.forEach((str) => {
-    if (str == null) {
+  args.forEach((arg) => {
+    if (arg == null) {
       throw new BadRequestError({ description: 'argument is null/undefined' });
     }
-    if (str.trim().length < 1) {
+    if (typeof (arg) === 'string' && arg.trim().length < 1) {
       throw new BadRequestError({ description: 'argument is empty' });
+    }
+    if (Array.isArray(arg) && arg.length < 1) {
+      throw new BadRequestError({ description: 'array argument is empty' });
     }
   });
 };
@@ -33,10 +36,12 @@ async function comparePassword(unhashed, hashed) {
   return compare(unhashed, hashed);
 }
 
-async function generateJwt({ id, email, password }) {
+async function generateJwt({
+  id, password, roles,
+}) {
   logger.debug('generating JWT');
-  requireNonNull(id, email, password);
-  return jwt.sign({ id, email }, password, {
+  requireNonNull(id, password, roles);
+  return jwt.sign({ id, roles }, password, {
     expiresIn: EXPIRES_IN,
     issuer: TOKEN_ISSUER,
   });

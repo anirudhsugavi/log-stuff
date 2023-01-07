@@ -1,6 +1,5 @@
 const userService = require('../services/user-service');
 const { handleErrors } = require('../util/app-errors');
-const { NO_CONTENT } = require('../util/constants');
 const logger = require('../util/logger');
 
 const getUsers = (_, res) => {
@@ -35,8 +34,7 @@ async function createUser(req, res) {
     res.json(user);
   } catch (err) {
     const errors = handleErrors(err);
-    res.status(errors.statusCode)
-      .json({ errors: errors.messages });
+    res.status(errors.statusCode).json({ errors: errors.messages });
   }
 }
 
@@ -46,34 +44,10 @@ const updateUser = (req, res) => {
   res.json({ message: 'update user coming right up' });
 };
 
-async function createToken(req, res) {
-  logger.info('generating user token');
-  try {
-    const tokenObj = await userService.createToken(req.body);
-    res.json(tokenObj);
-  } catch (err) {
-    const errors = handleErrors(err);
-    res.status(errors.statusCode).json({ errors: errors.messages });
-  }
-}
-
-async function authenticateUser(req, res) {
-  logger.info('authenticating user');
-  try {
-    await userService.authenticateUser(req.body);
-    res.status(NO_CONTENT).send();
-  } catch (err) {
-    const errors = handleErrors(err);
-    res.status(errors.statusCode).json({ errors: errors.messages });
-  }
-}
-
 module.exports = {
   getUsers,
   getUser,
   deleteUser,
   createUser,
   updateUser,
-  createToken,
-  authenticateUser,
 };
