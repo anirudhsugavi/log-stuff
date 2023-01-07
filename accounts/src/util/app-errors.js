@@ -1,3 +1,4 @@
+const { JsonWebTokenError } = require('jsonwebtoken');
 const {
   BAD_REQUEST, UNAUTHENTICATED, UNAUTHORIZED, NOT_FOUND, INTERNAL,
 } = require('./constants');
@@ -72,6 +73,14 @@ function handleErrors(err) {
     return {
       statusCode: err.statusCode,
       messages: { message: err.description },
+    };
+  }
+
+  // handle jwt error
+  if (err instanceof JsonWebTokenError) {
+    return {
+      statusCode: BAD_REQUEST,
+      messages: { message: err.message },
     };
   }
 

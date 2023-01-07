@@ -1,6 +1,8 @@
 const { hash, compare } = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 const { BadRequestError } = require('./app-errors');
 const logger = require('./logger');
+const { EXPIRES_IN, TOKEN_ISSUER } = require('./constants');
 
 const SALT_ROUND = 10;
 
@@ -31,7 +33,26 @@ async function comparePassword(unhashed, hashed) {
   return compare(unhashed, hashed);
 }
 
+async function generateJwt({ _id, email, password }) {
+  logger.debug('generating JWT');
+  requireNonNull(_id, email, password);
+  return jwt.sign({ _id, email }, password, {
+    expiresIn: EXPIRES_IN,
+    issuer: TOKEN_ISSUER,
+  });
+}
+
+async function verifyJwt({ token, password }) {
+  logger.debug('verifying JWT');
+  requireNonNull(token, password);
+  return jwt.verify(token, password, {
+    issuer: TOKEN_ISSUER,
+  });
+}
+
 module.exports = {
   hashPassword,
   comparePassword,
+  generateJwt,
+  verifyJwt,
 };

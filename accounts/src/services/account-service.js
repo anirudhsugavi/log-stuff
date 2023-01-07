@@ -2,7 +2,7 @@ const { accountRepo } = require('../db/repositories');
 const { BadRequestError, NotFoundError } = require('../util/app-errors');
 const logger = require('../util/logger');
 
-async function createNewAccount(account) {
+async function createAccount(account) {
   logger.debug('creating new account');
   validateInputs(account);
   return accountRepo.createAccount(account);
@@ -41,7 +41,7 @@ function validateInputs(account) {
 }
 
 module.exports = {
-  createNewAccount,
+  createAccount,
   updateAccount,
   getAccount,
 };

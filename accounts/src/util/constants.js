@@ -11,4 +11,8 @@ module.exports = {
 
   // user roles
   USER_ROLES: ['admin', 'read', 'write', 'delete'],
+
+  // 1 day in seconds
+  EXPIRES_IN: 24 * 60 * 60,
+  TOKEN_ISSUER: 'log-stuff-accounts',
 };

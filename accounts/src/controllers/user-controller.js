@@ -11,10 +11,11 @@ async function getUser(req, res) {
   logger.info('requested get user');
   try {
     const user = await userService.getUser({ _id: req.params.userId });
-    res.json({ status: 'success', user });
+    user.password = undefined;
+    res.json(user);
   } catch (err) {
     const errors = handleErrors(err);
-    res.status(errors.statusCode).json({ status: 'failure', errors: errors.messages });
+    res.status(errors.statusCode).json({ errors: errors.messages });
   }
 }
 
@@ -24,19 +25,19 @@ const deleteUser = (req, res) => {
   res.json({ message: 'delete user coming right up' });
 };
 
-const createUser = async (req, res) => {
+async function createUser(req, res) {
   logger.info('requested create user');
   try {
     const { createAccount, ...newUser } = req.body;
     const user = await userService.createUser({ user: newUser, createAccount });
     user.password = undefined;
-    res.json({ status: 'success', user });
+    res.json(user);
   } catch (err) {
     const errors = handleErrors(err);
     res.status(errors.statusCode)
-      .json({ status: 'failure', errors: errors.messages });
+      .json({ errors: errors.messages });
   }
-};
+}
 
 const updateUser = (req, res) => {
   // todo
@@ -44,6 +45,22 @@ const updateUser = (req, res) => {
   res.json({ message: 'update user coming right up' });
 };
 
+async function authenticateUser(req, res) {
+  logger.info('authenticating user');
+  try {
+    const auth = await userService.authenticateUser(req.body);
+    res.json(auth);
+  } catch (err) {
+    const errors = handleErrors(err);
+    res.status(errors.statusCode).json({ errors: errors.messages });
+  }
+}
+
 module.exports = {
-  getUsers, getUser, deleteUser, createUser, updateUser,
+  getUsers,
+  getUser,
+  deleteUser,
+  createUser,
+  updateUser,
+  authenticateUser,
 };

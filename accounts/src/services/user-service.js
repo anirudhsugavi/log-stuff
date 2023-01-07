@@ -1,9 +1,10 @@
-const { createNewAccount, findAccount } = require('./account-service');
+const accountService = require('./account-service');
 const { userRepo } = require('../db/repositories');
 const { BadRequestError, NotFoundError } = require('../util/app-errors');
-const { hashPassword } = require('../util/crypto-util');
+const { hashPassword, comparePassword, generateJwt } = require('../util/crypto-util');
 const logger = require('../util/logger');
 const validator = require('../validator');
+const { EXPIRES_IN, TOKEN_ISSUER } = require('../util/constants');
 
 async function getUser({ _id, email, username }) {
   if (_id) {
@@ -43,24 +44,40 @@ async function createUser({ user, createAccount }) {
   const { password, account, ...newUser } = user;
   newUser.password = await hashPassword(password);
   newUser.account = createAccount ? await createDefaultAccount(user)
-    : await getAccount(account);
+    : await getExistingAccount(account);
 
   return userRepo.createUser(newUser);
+}
+
+async function authenticateUser({ email, username, password }) {
+  const user = email ? await getUser({ email }) : await getUser({ username });
+  const result = await comparePassword(password, user.password);
+  if (!result) {
+    throw new BadRequestError({ description: 'incorrect password' });
+  }
+
+  const token = await generateJwt(user);
+  return {
+    tokenType: 'Bearer',
+    accessToken: token,
+    expiresIn: EXPIRES_IN,
+    issuer: TOKEN_ISSUER,
+  };
 }
 
 async function createDefaultAccount(user) {
   logger.debug('needs creating default account');
   const account = user.account ?? { name: user.email };
-  return createNewAccount(account);
+  return accountService.createAccount(account);
 }
 
-async function getAccount(account) {
+async function getExistingAccount(account) {
   if (!account?._id) {
     throw new BadRequestError({ description: 'missing account id for creating a user' });
   }
 
   validateId(account._id);
-  return findAccount({ _id: account._id });
+  return accountService.getAccount({ _id: account._id });
 }
 
 function validateInput(user) {
@@ -94,4 +111,5 @@ function validateId(id) {
 module.exports = {
   createUser,
   getUser,
+  authenticateUser,
 };
