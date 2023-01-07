@@ -45,10 +45,10 @@ const updateUser = (req, res) => {
   res.json({ message: 'update user coming right up' });
 };
 
-async function authenticateUser(req, res) {
+async function createToken(req, res) {
   logger.info('authenticating user');
   try {
-    const auth = await userService.authenticateUser(req.body);
+    const auth = await userService.createToken(req.body);
     res.json(auth);
   } catch (err) {
     const errors = handleErrors(err);
@@ -62,5 +62,5 @@ module.exports = {
   deleteUser,
   createUser,
   updateUser,
-  authenticateUser,
+  createToken,
 };

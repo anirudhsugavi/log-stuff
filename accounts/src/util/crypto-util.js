@@ -33,10 +33,10 @@ async function comparePassword(unhashed, hashed) {
   return compare(unhashed, hashed);
 }
 
-async function generateJwt({ _id, email, password }) {
+async function generateJwt({ id, email, password }) {
   logger.debug('generating JWT');
-  requireNonNull(_id, email, password);
-  return jwt.sign({ _id, email }, password, {
+  requireNonNull(id, email, password);
+  return jwt.sign({ id, email }, password, {
     expiresIn: EXPIRES_IN,
     issuer: TOKEN_ISSUER,
   });

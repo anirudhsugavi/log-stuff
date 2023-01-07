@@ -49,7 +49,7 @@ async function createUser({ user, createAccount }) {
   return userRepo.createUser(newUser);
 }
 
-async function authenticateUser({ email, username, password }) {
+async function createToken({ email, username, password }) {
   const user = email ? await getUser({ email }) : await getUser({ username });
   const result = await comparePassword(password, user.password);
   if (!result) {
@@ -111,5 +111,5 @@ function validateId(id) {
 module.exports = {
   createUser,
   getUser,
-  authenticateUser,
+  createToken,
 };

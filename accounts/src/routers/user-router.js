@@ -5,7 +5,7 @@ const {
   getUser,
   getUsers,
   updateUser,
-  authenticateUser,
+  createToken,
 } = require('../controllers/user-controller');
 
 const router = Router();
@@ -16,6 +16,6 @@ router.delete('/user/:userId', deleteUser);
 router.post('/user', createUser);
 router.put('/user', updateUser);
 
-router.post('/user/authenticate', authenticateUser);
+router.post('/user/token', createToken);
 
 module.exports = router;
