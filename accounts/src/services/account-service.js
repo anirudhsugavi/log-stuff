@@ -17,7 +17,7 @@ async function getAccount({ _id, name }) {
     logger.debug('finding account by ID', { _id });
     const account = await accountRepo.getAccountById(_id);
     if (!account) {
-      throw new NotFoundError({ description: `account with ID ${_id} does not exist` });
+      throw new NotFoundError({ description: `account with ID '${_id}' does not exist` });
     }
     return account;
   }
@@ -26,7 +26,7 @@ async function getAccount({ _id, name }) {
     logger.debug('finding account by name', { name });
     const account = await accountRepo.getAccountByName(name);
     if (!account) {
-      throw new NotFoundError({ description: `account with name ${name} does not exist` });
+      throw new NotFoundError({ description: `account with name '${name}' does not exist` });
     }
     return account;
   }

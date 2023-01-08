@@ -11,7 +11,7 @@ async function getUser({ _id, email, username }) {
     validateId(_id);
     const user = await userRepo.getUserById(_id);
     if (!user) {
-      throw new NotFoundError({ description: `user with ID ${_id} does not exist` });
+      throw new NotFoundError({ description: `user with ID '${_id}' does not exist` });
     }
     return user;
   }
@@ -20,7 +20,7 @@ async function getUser({ _id, email, username }) {
     logger.debug('finding user by email', { email });
     const user = await userRepo.getUserByEmail(email);
     if (!user) {
-      throw new NotFoundError({ description: `user with email ${email} does not exist` });
+      throw new NotFoundError({ description: `user with email '${email}' does not exist` });
     }
     return user;
   }
@@ -29,7 +29,7 @@ async function getUser({ _id, email, username }) {
     logger.debug('finding user by username', { username });
     const user = await userRepo.getUserByUsername(username);
     if (!user) {
-      throw new NotFoundError({ description: `user with username ${username} does not exist` });
+      throw new NotFoundError({ description: `user with username '${username}' does not exist` });
     }
     return user;
   }
