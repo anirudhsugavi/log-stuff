@@ -1,5 +1,4 @@
 const userService = require('../services/user-service');
-const { handleErrors } = require('../util/app-errors');
 const logger = require('../util/logger');
 
 const getUsers = (_, res) => {
@@ -7,15 +6,14 @@ const getUsers = (_, res) => {
   res.json({ message: 'get users coming right up' });
 };
 
-async function getUser(req, res) {
+async function getUser(req, res, next) {
   logger.info('requested get user');
   try {
     const user = await userService.getUser({ _id: req.params.userId });
     user.password = undefined;
     res.json(user);
   } catch (err) {
-    const errors = handleErrors(err);
-    res.status(errors.statusCode).json({ errors: errors.messages });
+    next(err);
   }
 }
 
@@ -25,7 +23,7 @@ const deleteUser = (req, res) => {
   res.json({ message: 'delete user coming right up' });
 };
 
-async function createUser(req, res) {
+async function createUser(req, res, next) {
   logger.info('requested create user');
   try {
     const { createAccount, ...newUser } = req.body;
@@ -33,8 +31,7 @@ async function createUser(req, res) {
     user.password = undefined;
     res.json(user);
   } catch (err) {
-    const errors = handleErrors(err);
-    res.status(errors.statusCode).json({ errors: errors.messages });
+    next(err);
   }
 }
 

@@ -5,6 +5,7 @@ const userRouter = require('./routers/user-router');
 const authRouter = require('./routers/auth-router');
 const props = require('./util/properties-loader');
 const logger = require('./util/logger');
+const { errorHandler, errorLogger } = require('./middleware/error-handler');
 
 const exitApp = () => {
   disconnect()
@@ -26,6 +27,8 @@ connect()
     app.use(cors());
     app.use('/auth', authRouter);
     app.use(userRouter);
+    app.use(errorLogger);
+    app.use(errorHandler);
     app.listen(props.APP_PORT, () => {
       logger.info(`Listening on port ${props.APP_PORT}`);
     }).on('error', (err) => {

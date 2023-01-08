@@ -28,7 +28,7 @@ describe('Hash password validation', () => {
 });
 
 describe('JWT validation', () => {
-  const TEST_OBJ = { id: '123ab', email: 'test@example.com', password: TEST_PLAIN };
+  const TEST_OBJ = { id: '123ab', password: TEST_PLAIN, roles: ['admin'] };
   it('valid JWT', async () => {
     const token = await generateJwt(TEST_OBJ);
     expect(await verifyJwt({ token, password: TEST_PLAIN })).toBeTruthy();
