@@ -26,8 +26,7 @@ const deleteUser = (req, res) => {
 async function createUser(req, res, next) {
   logger.info('requested create user');
   try {
-    const { createAccount, ...newUser } = req.body;
-    const user = await userService.createUser({ user: newUser, createAccount });
+    const user = await userService.createUser(req.body);
     user.password = undefined;
     res.json(user);
   } catch (err) {

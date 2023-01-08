@@ -1,4 +1,3 @@
-const accountService = require('./account-service');
 const { userRepo } = require('../db/repositories');
 const { BadRequestError, NotFoundError } = require('../util/app-errors');
 const { hashPassword } = require('../util/crypto-util');
@@ -37,30 +36,13 @@ async function getUser({ _id, email, username }) {
   throw new BadRequestError({ description: 'user ID, email, or username is required' });
 }
 
-async function createUser({ user, createAccount }) {
+async function createUser(user) {
   validateInput(user);
 
-  const { password, account, ...newUser } = user;
+  const { password, ...newUser } = user;
   newUser.password = await hashPassword(password);
-  newUser.account = createAccount ? await createDefaultAccount(user)
-    : await getExistingAccount(account);
 
   return userRepo.createUser(newUser);
-}
-
-async function createDefaultAccount(user) {
-  logger.debug('needs creating default account');
-  const account = user.account ?? { name: user.email };
-  return accountService.createAccount(account);
-}
-
-async function getExistingAccount(account) {
-  if (!account?._id) {
-    throw new BadRequestError({ description: 'missing account id for creating a user' });
-  }
-
-  validateId(account._id);
-  return accountService.getAccount({ _id: account._id });
 }
 
 function validateInput(user) {

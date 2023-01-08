@@ -1,4 +1,4 @@
-const { Schema, Types } = require('mongoose');
+const { Schema } = require('mongoose');
 
 const NameSchema = new Schema({
   first: { type: String },
@@ -19,25 +19,13 @@ const UserSchema = new Schema({
   },
   verified: { type: Boolean, default: false },
   name: NameSchema,
-  account: {
-    type: Types.ObjectId,
-    ref: 'account',
-    required: [true, 'user must be associated to an account'],
-  },
   roles: { type: [String], required: [true, 'user should have roles'] },
   avatar: { type: String },
-  deleted: { type: Boolean, default: false },
-});
-
-const AccountSchema = new Schema({
-  name: { type: String, required: [true, 'account name is required'] },
-  settings: {
-    type: Map,
-    of: String,
-  },
+  settings: { type: Map, of: String },
   deleted: { type: Boolean, default: false },
 });
 
 module.exports = {
-  NameSchema, UserSchema, AccountSchema,
+  NameSchema,
+  UserSchema,
 };
