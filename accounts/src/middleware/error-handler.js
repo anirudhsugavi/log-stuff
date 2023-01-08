@@ -3,13 +3,13 @@ const { AppError } = require('../util/app-errors');
 const { BAD_REQUEST, INTERNAL } = require('../util/constants');
 const logger = require('../util/logger');
 
-function errorLogger(err, req, _res, next) {
+async function errorLogger(err, req, _res, next) {
   logger.error(req.path, err);
   next(err);
 }
 
 // eslint-disable-next-line no-unused-vars
-function errorHandler(err, _req, res, _next) {
+async function errorHandler(err, _req, res, _next) {
   // handle app errors
   if (err instanceof AppError) {
     res.status(err.statusCode).json({ errors: { message: err.description } });

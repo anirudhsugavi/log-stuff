@@ -34,7 +34,7 @@ async function authenticateUser({
   // authorization
   validateRoles(requiredRoles);
   const roles = requiredRoles ?? payload.roles;
-  const hasRoles = user.roles.includes('admin') || roles.every((role) => user.roles.includes(role));
+  const hasRoles = payload.roles.includes('admin') || roles.every((role) => payload.roles.includes(role));
   if (!hasRoles) {
     throw new UnauthorizedError({ description: 'access denied' });
   }
