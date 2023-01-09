@@ -46,7 +46,13 @@ describe('JWT validation', () => {
 
   it.each([
     '', '    ', undefined, null,
-  ])('when token is "%s"', async (token) => {
-    await expect(verifyJwt({ token })).rejects.toThrowError();
+  ])('when token is "%s"', (token) => {
+    expect(() => verifyJwt({ token })).toThrowError(BadRequestError);
+  });
+
+  it.each([
+    '', '   ', undefined, null,
+  ])('when password is "%s"', (password) => {
+    expect(() => generateJwt({ id: '123', password, roles: [] })).toThrowError(BadRequestError);
   });
 });
