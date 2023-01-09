@@ -4,16 +4,8 @@ async function createUser(user) {
   return User.create(user);
 }
 
-async function getUserById(_id) {
-  return User.findById(_id);
-}
-
-async function getUserByEmail(email) {
-  return User.findOne({ email });
-}
-
-async function getUserByUsername(username) {
-  return User.findOne({ username });
+async function getUser(getQuery) {
+  return User.findOne(getQuery);
 }
 
 async function updateUser(_id, updateQuery) {
@@ -26,9 +18,7 @@ async function getAllUsers() {
 
 module.exports = {
   createUser,
-  getUserById,
-  getUserByEmail,
-  getUserByUsername,
+  getUser,
   updateUser,
   getAllUsers,
 };
