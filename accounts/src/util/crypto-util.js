@@ -6,17 +6,20 @@ const { EXPIRES_IN, TOKEN_ISSUER } = require('./constants');
 
 const SALT_ROUND = 10;
 
-const requireNonNull = (...strings) => {
-  if (strings.length < 1) {
+const requireNonNull = (...args) => {
+  if (args.length < 1) {
     throw new BadRequestError({ description: 'insufficient number of arguments', errorStack: new RangeError() });
   }
 
-  strings.forEach((str) => {
-    if (str == null) {
+  args.forEach((arg) => {
+    if (arg == null) {
       throw new BadRequestError({ description: 'argument is null/undefined' });
     }
-    if (str.trim().length < 1) {
+    if (typeof (arg) === 'string' && arg.trim().length < 1) {
       throw new BadRequestError({ description: 'argument is empty' });
+    }
+    if (Array.isArray(arg) && arg.length < 1) {
+      throw new BadRequestError({ description: 'array argument is empty' });
     }
   });
 };
@@ -33,20 +36,36 @@ async function comparePassword(unhashed, hashed) {
   return compare(unhashed, hashed);
 }
 
-async function generateJwt({ id, email, password }) {
+function generateJwt({ id, secret, roles }) {
   logger.debug('generating JWT');
-  requireNonNull(id, email, password);
-  return jwt.sign({ id, email }, password, {
-    expiresIn: EXPIRES_IN,
-    issuer: TOKEN_ISSUER,
+  requireNonNull(id, secret, roles);
+  return new Promise((resolve, reject) => {
+    jwt.sign({ id, roles }, secret, {
+      expiresIn: EXPIRES_IN,
+      issuer: TOKEN_ISSUER,
+    }, (err, token) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(token);
+      }
+    });
   });
 }
 
-async function verifyJwt({ token, password }) {
+function verifyJwt({ token, secret }) {
   logger.debug('verifying JWT');
-  requireNonNull(token, password);
-  return jwt.verify(token, password, {
-    issuer: TOKEN_ISSUER,
+  requireNonNull(token, secret);
+  return new Promise((resolve, reject) => {
+    jwt.verify(token, secret, {
+      issuer: TOKEN_ISSUER,
+    }, (err, payload) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(payload);
+      }
+    });
   });
 }
 

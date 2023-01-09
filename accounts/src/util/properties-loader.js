@@ -22,4 +22,5 @@ module.exports = {
   MONGO_PASSWORD: process.env.MONGO_PASSWORD,
   MONGO_DB_NAME: process.env.MONGO_DB_NAME,
   MONGO_DB_AUTH_SOURCE: process.env.MONGO_DB_AUTH_SOURCE,
+  JWT_SECRET: process.env.JWT_SECRET,
 };

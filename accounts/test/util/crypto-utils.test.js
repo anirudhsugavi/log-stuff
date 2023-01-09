@@ -28,25 +28,31 @@ describe('Hash password validation', () => {
 });
 
 describe('JWT validation', () => {
-  const TEST_OBJ = { id: '123ab', email: 'test@example.com', password: TEST_PLAIN };
+  const TEST_OBJ = { id: '123ab', secret: TEST_PLAIN, roles: ['admin'] };
   it('valid JWT', async () => {
     const token = await generateJwt(TEST_OBJ);
-    expect(await verifyJwt({ token, password: TEST_PLAIN })).toBeTruthy();
+    expect(await verifyJwt({ token, secret: TEST_PLAIN })).toBeTruthy();
   });
 
   it('invalid secret', async () => {
     const token = await generateJwt(TEST_OBJ);
-    await expect(verifyJwt({ token, password: 'invalid secret' })).rejects.toThrowError();
+    await expect(verifyJwt({ token, secret: 'invalid secret' })).rejects.toThrowError();
   });
 
   it('invalid token', async () => {
     const token = 'ey.SomeINvalid123.@string';
-    await expect(verifyJwt({ token, password: TEST_PLAIN })).rejects.toThrowError();
+    await expect(verifyJwt({ token, secret: TEST_PLAIN })).rejects.toThrowError();
   });
 
   it.each([
     '', '    ', undefined, null,
-  ])('when token is "%s"', async (token) => {
-    await expect(verifyJwt({ token })).rejects.toThrowError();
+  ])('when token is "%s"', (token) => {
+    expect(() => verifyJwt({ token })).toThrowError(BadRequestError);
+  });
+
+  it.each([
+    '', '   ', undefined, null,
+  ])('when secret is "%s"', (secret) => {
+    expect(() => generateJwt({ id: '123', secret, roles: [] })).toThrowError(BadRequestError);
   });
 });

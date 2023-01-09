@@ -1,6 +1,5 @@
 const userService = require('../services/user-service');
-const { handleErrors } = require('../util/app-errors');
-const { NO_CONTENT } = require('../util/constants');
+const { UnauthorizedError } = require('../util/app-errors');
 const logger = require('../util/logger');
 
 const getUsers = (_, res) => {
@@ -8,15 +7,15 @@ const getUsers = (_, res) => {
   res.json({ message: 'get users coming right up' });
 };
 
-async function getUser(req, res) {
+async function getUser(req, res, next) {
   logger.info('requested get user');
   try {
+    verifyAuthenticatedUser(req.userId, req.params.userId);
     const user = await userService.getUser({ _id: req.params.userId });
     user.password = undefined;
     res.json(user);
   } catch (err) {
-    const errors = handleErrors(err);
-    res.status(errors.statusCode).json({ errors: errors.messages });
+    next(err);
   }
 }
 
@@ -26,45 +25,32 @@ const deleteUser = (req, res) => {
   res.json({ message: 'delete user coming right up' });
 };
 
-async function createUser(req, res) {
+async function createUser(req, res, next) {
   logger.info('requested create user');
   try {
-    const { createAccount, ...newUser } = req.body;
-    const user = await userService.createUser({ user: newUser, createAccount });
+    const user = await userService.createUser(req.body);
     user.password = undefined;
     res.json(user);
   } catch (err) {
-    const errors = handleErrors(err);
-    res.status(errors.statusCode)
-      .json({ errors: errors.messages });
+    next(err);
   }
 }
 
-const updateUser = (req, res) => {
-  // todo
-  console.log(req.body);
-  res.json({ message: 'update user coming right up' });
-};
-
-async function createToken(req, res) {
-  logger.info('generating user token');
+async function updateUser(req, res, next) {
+  logger.info('requested update user');
   try {
-    const tokenObj = await userService.createToken(req.body);
-    res.json(tokenObj);
+    verifyAuthenticatedUser(req.userId, req.params.userId);
+    const user = await userService.updateUser(req.params.userId, req.body);
+    user.password = undefined;
+    res.json(user);
   } catch (err) {
-    const errors = handleErrors(err);
-    res.status(errors.statusCode).json({ errors: errors.messages });
+    next(err);
   }
 }
 
-async function authenticateUser(req, res) {
-  logger.info('authenticating user');
-  try {
-    await userService.authenticateUser(req.body);
-    res.status(NO_CONTENT).send();
-  } catch (err) {
-    const errors = handleErrors(err);
-    res.status(errors.statusCode).json({ errors: errors.messages });
+function verifyAuthenticatedUser(authenticatedUserId, requestUserId) {
+  if (authenticatedUserId !== requestUserId) {
+    throw new UnauthorizedError({ description: 'authenticated user does not have access' });
   }
 }
 
@@ -74,6 +60,4 @@ module.exports = {
   deleteUser,
   createUser,
   updateUser,
-  createToken,
-  authenticateUser,
 };

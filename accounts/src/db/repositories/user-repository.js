@@ -1,31 +1,15 @@
 const { User } = require('../../models');
-const { NotFoundError } = require('../../util/app-errors');
-const logger = require('../../util/logger');
 
 async function createUser(user) {
   return User.create(user);
 }
 
-async function getUserById(_id) {
-  return User.findById(_id);
+async function getUser(getQuery) {
+  return User.findOne(getQuery);
 }
 
-async function getUserByEmail(email) {
-  return User.findOne({ email });
-}
-
-async function getUserByUsername(username) {
-  return User.findOne({ username });
-}
-
-async function updateUser(existing, toUpdate) {
-  // todo
-  logger.debug('updating user', existing, toUpdate);
-  const user = await User.findByIdAndUpdate(existing._id, toUpdate);
-  if (user == null) {
-    throw new NotFoundError({ description: `user ${existing.username ?? existing.email} not found` });
-  }
-  return user;
+async function updateUser(_id, updateQuery) {
+  return User.findByIdAndUpdate(_id, updateQuery, { new: true, runValidators: true });
 }
 
 async function getAllUsers() {
@@ -34,9 +18,7 @@ async function getAllUsers() {
 
 module.exports = {
   createUser,
-  getUserById,
-  getUserByEmail,
-  getUserByUsername,
+  getUser,
   updateUser,
   getAllUsers,
 };
