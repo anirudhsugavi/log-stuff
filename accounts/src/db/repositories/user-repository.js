@@ -1,5 +1,4 @@
 const { User } = require('../../models');
-const { NotFoundError } = require('../../util/app-errors');
 const logger = require('../../util/logger');
 
 async function createUser(user) {
@@ -18,13 +17,9 @@ async function getUserByUsername(username) {
   return User.findOne({ username });
 }
 
-async function updateUser(existing, toUpdate) {
-  // todo
-  logger.debug('updating user', existing, toUpdate);
-  const user = await User.findByIdAndUpdate(existing._id, toUpdate);
-  if (user == null) {
-    throw new NotFoundError({ description: `user ${existing.username ?? existing.email} not found` });
-  }
+async function updateUser(existingId, toUpdate) {
+  logger.debug(`updating user '${existingId}'`, toUpdate);
+  const user = await User.findByIdAndUpdate(existingId, toUpdate, { new: true });
   return user;
 }
 

@@ -39,22 +39,36 @@ async function getUser({ _id, email, username }) {
 async function createUser(user) {
   validateInput(user);
 
-  const { password, ...newUser } = user;
+  const {
+    password, verified, deleted, ...newUser
+  } = user;
   newUser.password = await hashPassword(password);
 
   return userRepo.createUser(newUser);
 }
 
+async function updateUser(existingId, user) {
+  validateId(existingId);
+  const {
+    email, password, verified, deleted, ...toUpdate
+  } = user;
+  validateInput(toUpdate);
+
+  return userRepo.updateUser(existingId, toUpdate);
+}
+
 function validateInput(user) {
   logger.debug('validating user input');
 
-  const { email, password, username } = user;
+  const {
+    email, password, username, roles,
+  } = user;
 
-  if (!validator.isValidEmail(email)) {
+  if (email && !validator.isValidEmail(email)) {
     throw new BadRequestError({ description: 'invalid email' });
   }
 
-  if (!validator.isStrongPassword(password)) {
+  if (password && !validator.isStrongPassword(password)) {
     throw new BadRequestError({ description: 'password does not meet requirements' });
   }
 
@@ -62,7 +76,7 @@ function validateInput(user) {
     throw new BadRequestError({ description: 'special characters not allowed in username' });
   }
 
-  if (!validator.isValidRoles(user.roles)) {
+  if (roles && !validator.isValidRoles(roles)) {
     throw new BadRequestError({ description: 'invalid roles' });
   }
 }
@@ -76,4 +90,5 @@ function validateId(id) {
 module.exports = {
   createUser,
   getUser,
+  updateUser,
 };

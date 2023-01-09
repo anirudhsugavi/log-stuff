@@ -34,11 +34,16 @@ async function createUser(req, res, next) {
   }
 }
 
-const updateUser = (req, res) => {
-  // todo
-  console.log(req.body);
-  res.json({ message: 'update user coming right up' });
-};
+async function updateUser(req, res, next) {
+  logger.info('requested update user');
+  try {
+    const user = await userService.updateUser(req.params.userId, req.body);
+    user.password = undefined;
+    res.json(user);
+  } catch (err) {
+    next(err);
+  }
+}
 
 module.exports = {
   getUsers,
