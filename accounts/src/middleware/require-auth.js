@@ -8,7 +8,8 @@ function requireAuth(requiredRoles) {
     try {
       validateAuthHeader(authHeader);
       const token = authHeader.split(' ')[1];
-      await authenticateUser({ _id: req.params.userId, token, requiredRoles });
+      const user = await authenticateUser({ token, requiredRoles });
+      req.userId = user.id;
       next();
     } catch (err) {
       next(err);

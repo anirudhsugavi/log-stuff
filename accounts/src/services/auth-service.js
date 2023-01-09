@@ -1,6 +1,7 @@
 const { BadRequestError, UnauthorizedError } = require('../util/app-errors');
 const { EXPIRES_IN, TOKEN_ISSUER, TOKEN_TYPE } = require('../util/constants');
 const { comparePassword, generateJwt, verifyJwt } = require('../util/crypto-util');
+const { JWT_SECRET } = require('../util/properties-loader');
 const { isValidRoles } = require('../validator');
 const userService = require('./user-service');
 
@@ -17,19 +18,16 @@ async function createToken({
   return {
     tokenType: TOKEN_TYPE,
     accessToken: await generateJwt({
-      id: user.id, password: user.password, roles: requiredRoles ?? user.roles,
+      id: user.id, secret: JWT_SECRET, roles: requiredRoles ?? user.roles,
     }),
     expiresIn: EXPIRES_IN,
     issuer: TOKEN_ISSUER,
   };
 }
 
-async function authenticateUser({
-  _id, email, username, token, requiredRoles,
-}) {
+async function authenticateUser({ token, requiredRoles }) {
   // authentication
-  const user = await userService.getUser({ _id, email, username });
-  const payload = await verifyJwt({ token, password: user.password });
+  const payload = await verifyJwt({ token, secret: JWT_SECRET });
 
   // authorization
   validateRoles(requiredRoles);
@@ -38,6 +36,7 @@ async function authenticateUser({
   if (!hasRoles) {
     throw new UnauthorizedError({ description: 'access denied' });
   }
+  return payload;
 }
 
 function validateRoles(roles) {

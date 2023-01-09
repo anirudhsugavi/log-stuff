@@ -36,11 +36,11 @@ async function comparePassword(unhashed, hashed) {
   return compare(unhashed, hashed);
 }
 
-function generateJwt({ id, password, roles }) {
+function generateJwt({ id, secret, roles }) {
   logger.debug('generating JWT');
-  requireNonNull(id, password, roles);
+  requireNonNull(id, secret, roles);
   return new Promise((resolve, reject) => {
-    jwt.sign({ id, roles }, password, {
+    jwt.sign({ id, roles }, secret, {
       expiresIn: EXPIRES_IN,
       issuer: TOKEN_ISSUER,
     }, (err, token) => {
@@ -53,11 +53,11 @@ function generateJwt({ id, password, roles }) {
   });
 }
 
-function verifyJwt({ token, password }) {
+function verifyJwt({ token, secret }) {
   logger.debug('verifying JWT');
-  requireNonNull(token, password);
+  requireNonNull(token, secret);
   return new Promise((resolve, reject) => {
-    jwt.verify(token, password, {
+    jwt.verify(token, secret, {
       issuer: TOKEN_ISSUER,
     }, (err, payload) => {
       if (err) {

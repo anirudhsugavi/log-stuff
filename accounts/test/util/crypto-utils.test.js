@@ -28,20 +28,20 @@ describe('Hash password validation', () => {
 });
 
 describe('JWT validation', () => {
-  const TEST_OBJ = { id: '123ab', password: TEST_PLAIN, roles: ['admin'] };
+  const TEST_OBJ = { id: '123ab', secret: TEST_PLAIN, roles: ['admin'] };
   it('valid JWT', async () => {
     const token = await generateJwt(TEST_OBJ);
-    expect(await verifyJwt({ token, password: TEST_PLAIN })).toBeTruthy();
+    expect(await verifyJwt({ token, secret: TEST_PLAIN })).toBeTruthy();
   });
 
   it('invalid secret', async () => {
     const token = await generateJwt(TEST_OBJ);
-    await expect(verifyJwt({ token, password: 'invalid secret' })).rejects.toThrowError();
+    await expect(verifyJwt({ token, secret: 'invalid secret' })).rejects.toThrowError();
   });
 
   it('invalid token', async () => {
     const token = 'ey.SomeINvalid123.@string';
-    await expect(verifyJwt({ token, password: TEST_PLAIN })).rejects.toThrowError();
+    await expect(verifyJwt({ token, secret: TEST_PLAIN })).rejects.toThrowError();
   });
 
   it.each([
@@ -52,7 +52,7 @@ describe('JWT validation', () => {
 
   it.each([
     '', '   ', undefined, null,
-  ])('when password is "%s"', (password) => {
-    expect(() => generateJwt({ id: '123', password, roles: [] })).toThrowError(BadRequestError);
+  ])('when secret is "%s"', (secret) => {
+    expect(() => generateJwt({ id: '123', secret, roles: [] })).toThrowError(BadRequestError);
   });
 });
