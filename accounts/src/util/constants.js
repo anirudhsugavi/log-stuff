@@ -15,4 +15,5 @@ module.exports = {
   // 1 day in seconds
   EXPIRES_IN: 24 * 60 * 60,
   TOKEN_ISSUER: 'log-stuff-accounts',
+  TOKEN_TYPE: 'Bearer',
 };

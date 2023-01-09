@@ -1,5 +1,5 @@
 const { BadRequestError, UnauthorizedError } = require('../util/app-errors');
-const { EXPIRES_IN, TOKEN_ISSUER } = require('../util/constants');
+const { EXPIRES_IN, TOKEN_ISSUER, TOKEN_TYPE } = require('../util/constants');
 const { comparePassword, generateJwt, verifyJwt } = require('../util/crypto-util');
 const { isValidRoles } = require('../validator');
 const userService = require('./user-service');
@@ -15,7 +15,7 @@ async function createToken({
 
   validateRoles(requiredRoles);
   return {
-    tokenType: 'Bearer',
+    tokenType: TOKEN_TYPE,
     accessToken: await generateJwt({
       id: user.id, password: user.password, roles: requiredRoles ?? user.roles,
     }),
