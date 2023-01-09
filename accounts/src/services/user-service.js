@@ -47,14 +47,34 @@ async function createUser(user) {
   return userRepo.createUser(newUser);
 }
 
-async function updateUser(existingId, user) {
-  validateId(existingId);
-  const {
-    email, password, verified, deleted, ...toUpdate
-  } = user;
-  validateInput(toUpdate);
-
-  return userRepo.updateUser(existingId, toUpdate);
+async function updateUser(_id, {
+  type, email, password, username, name, roles, avatar, settings,
+}) {
+  switch (type) {
+    case 'email':
+      // todo
+      email.trim();
+      throw new BadRequestError({ description: 'update email coming soon' });
+    case 'password':
+      // todo
+      password.trim();
+      throw new BadRequestError({ description: 'update password coming soon' });
+    case 'username':
+      // todo
+      username.trim();
+      throw new BadRequestError({ description: 'update username coming soon' });
+    case 'name':
+      return updateUserFields(_id, name, getNameQuery);
+    case 'settings':
+      return updateUserFields(_id, settings, getSettingsQuery);
+    case 'general':
+      // todo
+      roles.push(undefined);
+      avatar.trim();
+      throw new BadRequestError({ description: 'update general coming soon' });
+    default:
+      throw new BadRequestError({ description: `invalid update user type '${type}'` });
+  }
 }
 
 function validateInput(user) {
@@ -85,6 +105,57 @@ function validateId(id) {
   if (!validator.isValidId(id)) {
     throw new BadRequestError({ description: 'invalid ID' });
   }
+}
+
+async function updateUserFields(_id, updateObj, queryFn) {
+  const [set, unset] = queryFn(updateObj);
+
+  if (Object.keys(set).length > 0 && Object.keys(unset).length > 0) {
+    const result = await Promise.all([
+      userRepo.updateUser(_id, { $set: set }),
+      userRepo.updateUser(_id, { $unset: unset }),
+    ]);
+    return Object.assign(...result);
+  }
+
+  if (Object.keys(set).length > 0) {
+    return userRepo.updateUser(_id, { $set: set });
+  }
+
+  if (Object.keys(unset).length > 0) {
+    return userRepo.updateUser(_id, { $unset: unset });
+  }
+
+  throw new BadRequestError({ description: 'empty object' });
+}
+
+function getNameQuery(name) {
+  const partsToSet = {};
+  const partsToUnSet = {};
+
+  Object.entries(name).forEach(([key, val]) => {
+    if (val === null || val.trim().length < 1) {
+      partsToUnSet[`name.${key}`] = val;
+    } else {
+      partsToSet[`name.${key}`] = val;
+    }
+  });
+
+  return [partsToSet, partsToUnSet];
+}
+
+function getSettingsQuery(settings) {
+  const settingsToSet = {};
+  const settingsToUnset = {};
+  Object.entries(settings).forEach(([key, val]) => {
+    if (val === null || val.trim().length < 1) {
+      settingsToUnset[`settings.${key}`] = val;
+    } else {
+      settingsToSet[`settings.${key}`] = val;
+    }
+  });
+
+  return [settingsToSet, settingsToUnset];
 }
 
 module.exports = {

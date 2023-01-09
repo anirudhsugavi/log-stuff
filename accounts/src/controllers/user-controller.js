@@ -1,4 +1,5 @@
 const userService = require('../services/user-service');
+const { UnauthorizedError } = require('../util/app-errors');
 const logger = require('../util/logger');
 
 const getUsers = (_, res) => {
@@ -9,6 +10,7 @@ const getUsers = (_, res) => {
 async function getUser(req, res, next) {
   logger.info('requested get user');
   try {
+    verifyAuthenticatedUser(req.userId, req.params.userId);
     const user = await userService.getUser({ _id: req.params.userId });
     user.password = undefined;
     res.json(user);
@@ -37,11 +39,18 @@ async function createUser(req, res, next) {
 async function updateUser(req, res, next) {
   logger.info('requested update user');
   try {
+    verifyAuthenticatedUser(req.userId, req.params.userId);
     const user = await userService.updateUser(req.params.userId, req.body);
     user.password = undefined;
     res.json(user);
   } catch (err) {
     next(err);
+  }
+}
+
+function verifyAuthenticatedUser(authenticatedUserId, requestUserId) {
+  if (authenticatedUserId !== requestUserId) {
+    throw new UnauthorizedError({ description: 'authenticated user does not have access' });
   }
 }
 
