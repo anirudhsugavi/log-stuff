@@ -1,14 +1,13 @@
 const { userRepo } = require('../db/repositories');
 const { BadRequestError, NotFoundError } = require('../util/app-errors');
-const { hashPassword } = require('../util/crypto-util');
 const logger = require('../util/logger');
 const validator = require('../validator');
 
-async function getUser({ _id, email, username }) {
+async function getUser({ _id, email, username }, fetchPassword = false) {
   if (_id) {
     logger.debug('finding user by ID', { _id });
     validateId(_id);
-    const user = await userRepo.getUser({ _id });
+    const user = await getUserHelper({ _id }, fetchPassword);
     if (!user) {
       throw new NotFoundError({ description: `user with ID '${_id}' does not exist` });
     }
@@ -17,7 +16,7 @@ async function getUser({ _id, email, username }) {
 
   if (email) {
     logger.debug('finding user by email', { email });
-    const user = await userRepo.getUser({ email });
+    const user = await getUserHelper({ email }, fetchPassword);
     if (!user) {
       throw new NotFoundError({ description: `user with email '${email}' does not exist` });
     }
@@ -26,7 +25,7 @@ async function getUser({ _id, email, username }) {
 
   if (username) {
     logger.debug('finding user by username', { username });
-    const user = await userRepo.getUser({ username });
+    const user = await getUserHelper({ username }, fetchPassword);
     if (!user) {
       throw new NotFoundError({ description: `user with username '${username}' does not exist` });
     }
@@ -39,42 +38,43 @@ async function getUser({ _id, email, username }) {
 async function createUser(user) {
   validateInput(user);
 
-  const {
-    password, verified, deleted, ...newUser
-  } = user;
-  newUser.password = await hashPassword(password);
-
-  return userRepo.createUser(newUser);
+  return userRepo.createUser(user);
 }
 
 async function updateUser(_id, {
-  type, email, password, username, name, roles, avatar, settings,
+  fields, email, password, username, name, avatar, settings,
 }) {
-  switch (type) {
-    case 'email':
-      // todo
-      email.trim();
-      throw new BadRequestError({ description: 'update email coming soon' });
-    case 'password':
-      // todo
-      password.trim();
-      throw new BadRequestError({ description: 'update password coming soon' });
-    case 'username':
-      // todo
-      username.trim();
-      throw new BadRequestError({ description: 'update username coming soon' });
-    case 'name':
-      return updateUserFields(_id, name, getNameQuery);
-    case 'settings':
-      return updateUserFields(_id, settings, getSettingsQuery);
-    case 'general':
-      // todo
-      roles.push(undefined);
-      avatar.trim();
-      throw new BadRequestError({ description: 'update general coming soon' });
-    default:
-      throw new BadRequestError({ description: `invalid update user type '${type}'` });
+  if (!fields || !Array.isArray(fields) || fields.length < 1) {
+    throw new BadRequestError({ description: 'invalid update fields array' });
   }
+
+  const updates = [...new Set(fields)].map((field) => {
+    switch (field) {
+      case 'email':
+        // todo
+        email.trim();
+        throw new BadRequestError({ description: 'update email coming soon' });
+      case 'password':
+        // todo
+        password.trim();
+        throw new BadRequestError({ description: 'update password coming soon' });
+      case 'username':
+        return updateUsername(_id, username);
+      case 'name':
+        return updateUserFields(_id, name, getNameQuery);
+      case 'settings':
+        return updateUserFields(_id, settings, getSettingsQuery);
+      case 'avatar':
+        // todo
+        avatar.trim();
+        throw new BadRequestError({ description: 'avatar update coming soon' });
+      default:
+        throw new BadRequestError({ description: `invalid update user field '${field}'` });
+    }
+  });
+  await Promise.all(updates);
+
+  return userRepo.getUser({ _id });
 }
 
 function validateInput(user) {
@@ -107,23 +107,43 @@ function validateId(id) {
   }
 }
 
+async function getUserHelper(filter, fetchPassword) {
+  return fetchPassword ? userRepo.getUserPassword(filter) : userRepo.getUser(filter);
+}
+
+async function updateUsername(_id, username) {
+  validateInput({ username });
+  const user = await userRepo.getUser({ _id });
+  if (!user) {
+    throw new BadRequestError('user does not exist');
+  }
+
+  if (username === user.username) {
+    return user;
+  }
+
+  const toUpdateUsername = (!username || !username.trim()) ? user.email : username;
+
+  return userRepo.updateUser({ _id }, { $set: { username: toUpdateUsername } });
+}
+
 async function updateUserFields(_id, updateObj, queryFn) {
   const [set, unset] = queryFn(updateObj);
 
   if (Object.keys(set).length > 0 && Object.keys(unset).length > 0) {
     const result = await Promise.all([
-      userRepo.updateUser(_id, { $set: set }),
-      userRepo.updateUser(_id, { $unset: unset }),
+      userRepo.updateUser({ _id }, { $set: set }),
+      userRepo.updateUser({ _id }, { $unset: unset }),
     ]);
     return Object.assign(...result);
   }
 
   if (Object.keys(set).length > 0) {
-    return userRepo.updateUser(_id, { $set: set });
+    return userRepo.updateUser({ _id }, { $set: set });
   }
 
   if (Object.keys(unset).length > 0) {
-    return userRepo.updateUser(_id, { $unset: unset });
+    return userRepo.updateUser({ _id }, { $unset: unset });
   }
 
   throw new BadRequestError({ description: 'empty object' });

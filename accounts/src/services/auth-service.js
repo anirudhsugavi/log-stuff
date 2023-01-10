@@ -8,7 +8,7 @@ const userService = require('./user-service');
 async function createToken({
   _id, email, username, password, requiredRoles,
 }) {
-  const user = await userService.getUser({ _id, email, username });
+  const user = await userService.getUser({ _id, email, username }, true);
   const result = await comparePassword(password, user.password);
   if (!result) {
     throw new BadRequestError({ description: 'incorrect password' });

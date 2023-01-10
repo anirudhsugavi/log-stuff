@@ -12,7 +12,6 @@ async function getUser(req, res, next) {
   try {
     verifyAuthenticatedUser(req.userId, req.params.userId);
     const user = await userService.getUser({ _id: req.params.userId });
-    user.password = undefined;
     res.json(user);
   } catch (err) {
     next(err);
@@ -29,7 +28,6 @@ async function createUser(req, res, next) {
   logger.info('requested create user');
   try {
     const user = await userService.createUser(req.body);
-    user.password = undefined;
     res.json(user);
   } catch (err) {
     next(err);
@@ -41,7 +39,6 @@ async function updateUser(req, res, next) {
   try {
     verifyAuthenticatedUser(req.userId, req.params.userId);
     const user = await userService.updateUser(req.params.userId, req.body);
-    user.password = undefined;
     res.json(user);
   } catch (err) {
     next(err);

@@ -1,15 +1,19 @@
 const { User } = require('../../models');
 
 async function createUser(user) {
-  return User.create(user);
+  return User.create(user).select('-password');
 }
 
 async function getUser(getQuery) {
-  return User.findOne(getQuery);
+  return User.findOne(getQuery).select('-password');
 }
 
-async function updateUser(_id, updateQuery) {
-  return User.findByIdAndUpdate(_id, updateQuery, { new: true, runValidators: true });
+async function getUserPassword(getQuery) {
+  return User.findOne(getQuery).select('password');
+}
+
+async function updateUser(filter, updateQuery) {
+  return User.findOneAndUpdate(filter, updateQuery, { new: true, runValidators: true }).select('-password');
 }
 
 async function getAllUsers() {
@@ -19,6 +23,7 @@ async function getAllUsers() {
 module.exports = {
   createUser,
   getUser,
+  getUserPassword,
   updateUser,
   getAllUsers,
 };
