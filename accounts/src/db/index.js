@@ -9,12 +9,14 @@ const {
 async function connect() {
   try {
     mongoose.set('strictQuery', false);
-    const connection = mongoose.connect(MONGO_URL, {
+    const connection = await mongoose.connect(MONGO_URL, {
       user: MONGO_USERNAME,
       pass: MONGO_PASSWORD,
       dbName: MONGO_DB_NAME,
       authSource: MONGO_DB_AUTH_SOURCE,
       writeConcern: { w: 1 },
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
     });
     logger.info(`Connected to DB on '${MONGO_URL}'`);
     return connection;
