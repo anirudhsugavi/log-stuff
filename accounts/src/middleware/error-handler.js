@@ -1,4 +1,5 @@
 const { JsonWebTokenError } = require('jsonwebtoken');
+const { ValidationError } = require('mongoose').Error;
 const { AppError } = require('../util/app-errors');
 const { BAD_REQUEST, INTERNAL } = require('../util/constants');
 const logger = require('../util/logger');
@@ -29,7 +30,7 @@ async function errorHandler(err, _req, res, _next) {
   }
 
   // handle validation errors
-  if (err.message.includes('user validation failed')) {
+  if (err instanceof ValidationError) {
     const messages = {};
     Object.values(err.errors).forEach(({ properties }) => {
       messages[properties.path] = properties.message;

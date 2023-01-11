@@ -28,7 +28,7 @@ async function createUser(req, res, next) {
   logger.info('requested create user');
   try {
     const user = await userService.createUser(req.body);
-    res.json(user);
+    res.status(201).location(`/user/${user._id}`).send();
   } catch (err) {
     next(err);
   }
