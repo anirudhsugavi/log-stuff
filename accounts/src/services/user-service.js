@@ -48,7 +48,7 @@ async function updateUser(_id, {
     throw new BadRequestError({ description: 'invalid update fields array' });
   }
 
-  const updates = [...new Set(fields)].map((field) => {
+  const queryPromises = [...new Set(fields)].map((field) => {
     switch (field) {
       case 'email':
         // todo
@@ -59,11 +59,11 @@ async function updateUser(_id, {
         password.trim();
         throw new BadRequestError({ description: 'update password coming soon' });
       case 'username':
-        return updateUsername(_id, username);
+        return getUsernameQuery(_id, username);
       case 'name':
-        return updateUserFields(_id, name, getNameQuery);
+        return getNameQuery(name);
       case 'settings':
-        return updateUserFields(_id, settings, getSettingsQuery);
+        return getSettingsQuery(settings);
       case 'avatar':
         // todo
         avatar.trim();
@@ -72,9 +72,18 @@ async function updateUser(_id, {
         throw new BadRequestError({ description: `invalid update user field '${field}'` });
     }
   });
-  await Promise.all(updates);
 
-  return userRepo.getUser({ _id });
+  const queries = await Promise.all(queryPromises);
+  const updateQuery = queries.reduce((acc, query) => {
+    if (Object.keys(query.set).length > 0) {
+      Object.assign(acc.set, query.set);
+    }
+    if (Object.keys(query.unset).length > 0) {
+      Object.assign(acc.unset, query.unset);
+    }
+    return acc;
+  }, { set: {}, unset: {} });
+  return userRepo.updateUser({ _id }, { $set: updateQuery.set, $unset: updateQuery.unset });
 }
 
 function validateInput(user) {
@@ -111,60 +120,34 @@ async function getUserHelper(filter, fetchPassword) {
   return fetchPassword ? userRepo.getUserPassword(filter) : userRepo.getUser(filter);
 }
 
-async function updateUsername(_id, username) {
+async function getUsernameQuery(_id, username) {
   validateInput({ username });
+
   const user = await userRepo.getUser({ _id });
   if (!user) {
     throw new BadRequestError('user does not exist');
   }
 
-  if (username === user.username) {
-    return user;
-  }
-
   const toUpdateUsername = (!username || !username.trim()) ? user.email : username;
-
-  return userRepo.updateUser({ _id }, { $set: { username: toUpdateUsername } });
+  return { set: { username: toUpdateUsername }, unset: {} };
 }
 
-async function updateUserFields(_id, updateObj, queryFn) {
-  const [set, unset] = queryFn(updateObj);
-
-  if (Object.keys(set).length > 0 && Object.keys(unset).length > 0) {
-    const result = await Promise.all([
-      userRepo.updateUser({ _id }, { $set: set }),
-      userRepo.updateUser({ _id }, { $unset: unset }),
-    ]);
-    return Object.assign(...result);
-  }
-
-  if (Object.keys(set).length > 0) {
-    return userRepo.updateUser({ _id }, { $set: set });
-  }
-
-  if (Object.keys(unset).length > 0) {
-    return userRepo.updateUser({ _id }, { $unset: unset });
-  }
-
-  throw new BadRequestError({ description: 'empty object' });
-}
-
-function getNameQuery(name) {
-  const partsToSet = {};
-  const partsToUnSet = {};
+async function getNameQuery(name) {
+  const namesToSet = {};
+  const namesToUnset = {};
 
   Object.entries(name).forEach(([key, val]) => {
     if (val === null || val.trim().length < 1) {
-      partsToUnSet[`name.${key}`] = val;
+      namesToUnset[`name.${key}`] = val;
     } else {
-      partsToSet[`name.${key}`] = val;
+      namesToSet[`name.${key}`] = val;
     }
   });
 
-  return [partsToSet, partsToUnSet];
+  return { set: namesToSet, unset: namesToUnset };
 }
 
-function getSettingsQuery(settings) {
+async function getSettingsQuery(settings) {
   const settingsToSet = {};
   const settingsToUnset = {};
   Object.entries(settings).forEach(([key, val]) => {
@@ -175,7 +158,7 @@ function getSettingsQuery(settings) {
     }
   });
 
-  return [settingsToSet, settingsToUnset];
+  return { set: settingsToSet, uset: settingsToUnset };
 }
 
 module.exports = {
