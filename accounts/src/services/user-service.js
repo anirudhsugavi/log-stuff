@@ -86,6 +86,39 @@ async function updateUser(_id, {
   return userRepo.updateUser({ _id }, { $set: updateQuery.set, $unset: updateQuery.unset });
 }
 
+async function deleteUser({ _id, email, username }) {
+  const deleteQuery = { $set: { deleted: true } };
+  if (_id) {
+    logger.debug('deleting user by ID', { _id });
+    validateId(_id);
+    const user = await userRepo.updateUser({ _id }, deleteQuery);
+    if (!user) {
+      throw new NotFoundError({ description: `user with ID '${_id}' does not exist` });
+    }
+    return user;
+  }
+
+  if (email) {
+    logger.debug('deleting user by email', { email });
+    const user = await userRepo.updateUser({ email }, deleteQuery);
+    if (!user) {
+      throw new NotFoundError({ description: `user with email '${email}' does not exist` });
+    }
+    return user;
+  }
+
+  if (username) {
+    logger.debug('deleting user by username', { username });
+    const user = await userRepo.updateUser({ username }, deleteQuery);
+    if (!user) {
+      throw new NotFoundError({ description: `user with username '${username}' does not exist` });
+    }
+    return user;
+  }
+
+  throw new BadRequestError({ description: 'user ID, email, or username is required' });
+}
+
 function validateInput(user) {
   logger.debug('validating user input');
 
@@ -165,4 +198,5 @@ module.exports = {
   createUser,
   getUser,
   updateUser,
+  deleteUser,
 };

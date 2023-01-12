@@ -1,9 +1,10 @@
 const userService = require('../services/user-service');
 const { UnauthorizedError } = require('../util/app-errors');
+const { CREATED, NO_CONTENT } = require('../util/constants');
 const logger = require('../util/logger');
 
 const getUsers = (_, res) => {
-  // todo
+  // todo: this is a super admin role request. probably will not do.
   res.json({ message: 'get users coming right up' });
 };
 
@@ -18,17 +19,22 @@ async function getUser(req, res, next) {
   }
 }
 
-const deleteUser = (req, res) => {
-  // todo
-  console.log(req.params.userId);
-  res.json({ message: 'delete user coming right up' });
-};
+async function deleteUser(req, res, next) {
+  logger.info('requested delete user');
+  try {
+    verifyAuthenticatedUser(req.userId, req.params.userId);
+    await userService.deleteUser({ _id: req.params.userId });
+    res.status(NO_CONTENT).send();
+  } catch (err) {
+    next(err);
+  }
+}
 
 async function createUser(req, res, next) {
   logger.info('requested create user');
   try {
     const user = await userService.createUser(req.body);
-    res.status(201).location(`/user/${user._id}`).send();
+    res.status(CREATED).location(`/user/${user._id}`).send();
   } catch (err) {
     next(err);
   }
@@ -47,7 +53,7 @@ async function updateUser(req, res, next) {
 
 function verifyAuthenticatedUser(authenticatedUserId, requestUserId) {
   if (authenticatedUserId !== requestUserId) {
-    throw new UnauthorizedError({ description: 'authenticated user does not have access' });
+    throw new UnauthorizedError({ description: 'authenticated user does not have access to this resource' });
   }
 }
 

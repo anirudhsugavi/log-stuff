@@ -5,19 +5,18 @@ async function createUser(user) {
 }
 
 async function getUser(getQuery) {
-  return User.findOne(getQuery).select('-password');
+  const query = { ...getQuery, deleted: false };
+  return User.findOne(query).select('-password');
 }
 
 async function getUserPassword(getQuery) {
-  return User.findOne(getQuery).select('password');
+  const query = { ...getQuery, deleted: false };
+  return User.findOne(query);
 }
 
 async function updateUser(filter, updateQuery) {
-  return User.findOneAndUpdate(filter, updateQuery, { new: true, runValidators: true }).select('-password');
-}
-
-async function getAllUsers() {
-  return User.find({});
+  const filterQuery = { ...filter, deleted: false };
+  return User.findOneAndUpdate(filterQuery, updateQuery, { new: true, runValidators: true }).select('-password');
 }
 
 module.exports = {
@@ -25,5 +24,4 @@ module.exports = {
   getUser,
   getUserPassword,
   updateUser,
-  getAllUsers,
 };
