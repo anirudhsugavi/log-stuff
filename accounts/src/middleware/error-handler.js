@@ -29,7 +29,7 @@ async function errorHandler(err, _req, res, _next) {
     return;
   }
 
-  // handle validation errors
+  // handle mongoose validation errors
   if (err instanceof ValidationError) {
     const messages = {};
     Object.values(err.errors).forEach(({ properties }) => {
@@ -37,6 +37,11 @@ async function errorHandler(err, _req, res, _next) {
     });
 
     res.status(BAD_REQUEST).json({ errors: messages });
+    return;
+  }
+
+  if (err instanceof SyntaxError) {
+    res.status(BAD_REQUEST).json({ errors: { message: err.message } });
     return;
   }
 
