@@ -4,15 +4,8 @@ const { comparePassword, generateJwt, verifyJwt } = require('../../src/util/cryp
 const { createToken, authenticateUser } = require('../../src/services/auth-service');
 const { getUser } = require('../../src/services/user-service');
 
-jest.mock('../../src/services/user-service', () => ({
-  getUser: jest.fn(),
-}));
-
-jest.mock('../../src/util/crypto-util', () => ({
-  comparePassword: jest.fn(),
-  generateJwt: jest.fn(),
-  verifyJwt: jest.fn(),
-}));
+jest.mock('../../src/services/user-service');
+jest.mock('../../src/util/crypto-util');
 
 describe('Test create token', () => {
   const TEST_ID = '123abc';
