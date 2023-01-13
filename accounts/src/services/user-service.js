@@ -48,41 +48,12 @@ async function updateUser(_id, {
     throw new BadRequestError({ description: 'invalid update fields array' });
   }
 
-  const queryPromises = [...new Set(fields)].map((field) => {
-    switch (field) {
-      case 'email':
-        // todo
-        email.trim();
-        throw new BadRequestError({ description: 'update email coming soon' });
-      case 'password':
-        // todo
-        password.trim();
-        throw new BadRequestError({ description: 'update password coming soon' });
-      case 'username':
-        return getUsernameQuery(_id, username);
-      case 'name':
-        return getNameQuery(name);
-      case 'settings':
-        return getSettingsQuery(settings);
-      case 'avatar':
-        // todo
-        avatar.trim();
-        throw new BadRequestError({ description: 'avatar update coming soon' });
-      default:
-        throw new BadRequestError({ description: `invalid update user field '${field}'` });
-    }
-  });
+  const queryPromises = [...new Set(fields)].map((field) => getUpdateQueryByField({
+    _id, field, email, password, username, name, avatar, settings,
+  }));
 
-  const queries = await Promise.all(queryPromises);
-  const updateQuery = queries.reduce((acc, query) => {
-    if (Object.keys(query.set).length > 0) {
-      Object.assign(acc.set, query.set);
-    }
-    if (Object.keys(query.unset).length > 0) {
-      Object.assign(acc.unset, query.unset);
-    }
-    return acc;
-  }, { set: {}, unset: {} });
+  const fieldQueries = await Promise.all(queryPromises);
+  const updateQuery = getAggregatedSetAndUnsetQueries(fieldQueries);
   return userRepo.updateUser({ _id }, { $set: updateQuery.set, $unset: updateQuery.unset });
 }
 
@@ -153,6 +124,33 @@ async function getUserHelper(filter, fetchPassword) {
   return fetchPassword ? userRepo.getUserPassword(filter) : userRepo.getUser(filter);
 }
 
+async function getUpdateQueryByField({
+  _id, field, email, password, username, name, avatar, settings,
+}) {
+  switch (field) {
+    case 'email':
+      // todo
+      email.trim();
+      throw new BadRequestError({ description: 'update email coming soon' });
+    case 'password':
+      // todo
+      password.trim();
+      throw new BadRequestError({ description: 'update password coming soon' });
+    case 'username':
+      return getUsernameQuery(_id, username);
+    case 'name':
+      return getNameQuery(name);
+    case 'settings':
+      return getSettingsQuery(settings);
+    case 'avatar':
+      // todo
+      avatar.trim();
+      throw new BadRequestError({ description: 'avatar update coming soon' });
+    default:
+      throw new BadRequestError({ description: `invalid update user field '${field}'` });
+  }
+}
+
 async function getUsernameQuery(_id, username) {
   validateInput({ username });
 
@@ -168,6 +166,9 @@ async function getUsernameQuery(_id, username) {
 async function getNameQuery(name) {
   const namesToSet = {};
   const namesToUnset = {};
+  if (!name) {
+    throw new BadRequestError({ description: 'empty name for update' });
+  }
 
   Object.entries(name).forEach(([key, val]) => {
     if (val === null || val.trim().length < 1) {
@@ -192,6 +193,20 @@ async function getSettingsQuery(settings) {
   });
 
   return { set: settingsToSet, uset: settingsToUnset };
+}
+
+function getAggregatedSetAndUnsetQueries(fieldQueries) {
+  return fieldQueries.reduce((acc, query) => {
+    if (Object.keys(query.set).length > 0) {
+      Object.assign(acc.set, query.set);
+    }
+
+    if (Object.keys(query.unset).length > 0) {
+      Object.assign(acc.unset, query.unset);
+    }
+
+    return acc;
+  }, { set: {}, unset: {} });
 }
 
 module.exports = {
