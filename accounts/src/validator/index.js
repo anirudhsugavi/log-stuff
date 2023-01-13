@@ -21,7 +21,7 @@ function isValidUsername(username) {
 }
 
 function isValidRoles(roles) {
-  return roles && roles.every((role) => USER_ROLES.includes(role));
+  return roles && roles.length > 0 && roles.every((role) => USER_ROLES.includes(role));
 }
 
 function isValidId(id) {
