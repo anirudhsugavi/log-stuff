@@ -121,7 +121,7 @@ function validateInput(user) {
 }
 
 async function getUserHelper(filter, fetchPassword) {
-  return fetchPassword ? userRepo.getUserPassword(filter) : userRepo.getUser(filter);
+  return fetchPassword ? userRepo.getUserWithPassword(filter) : userRepo.getUser(filter);
 }
 
 async function getUpdateQueryByField({

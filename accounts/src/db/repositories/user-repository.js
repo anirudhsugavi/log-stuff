@@ -9,7 +9,7 @@ async function getUser(getQuery) {
   return User.findOne(query).select('-password');
 }
 
-async function getUserPassword(getQuery) {
+async function getUserWithPassword(getQuery) {
   const query = { ...getQuery, deleted: false };
   return User.findOne(query);
 }
@@ -22,6 +22,6 @@ async function updateUser(filter, updateQuery) {
 module.exports = {
   createUser,
   getUser,
-  getUserPassword,
+  getUserWithPassword,
   updateUser,
 };
