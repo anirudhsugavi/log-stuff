@@ -6,7 +6,7 @@ const validator = require('../validator');
 async function getUser({ _id, email, username }, fetchPassword = false) {
   if (_id) {
     logger.debug('finding user by ID', { _id });
-    validateId(_id);
+    validateInput({ _id });
     const user = await getUserHelper({ _id }, fetchPassword);
     if (!user) {
       throw new NotFoundError({ description: `user with ID '${_id}' does not exist` });
@@ -16,6 +16,7 @@ async function getUser({ _id, email, username }, fetchPassword = false) {
 
   if (email) {
     logger.debug('finding user by email', { email });
+    validateInput({ email });
     const user = await getUserHelper({ email }, fetchPassword);
     if (!user) {
       throw new NotFoundError({ description: `user with email '${email}' does not exist` });
@@ -25,6 +26,7 @@ async function getUser({ _id, email, username }, fetchPassword = false) {
 
   if (username) {
     logger.debug('finding user by username', { username });
+    validateInput({ username });
     const user = await getUserHelper({ username }, fetchPassword);
     if (!user) {
       throw new NotFoundError({ description: `user with username '${username}' does not exist` });
@@ -61,7 +63,7 @@ async function deleteUser({ _id, email, username }) {
   const deleteQuery = { $set: { deleted: true } };
   if (_id) {
     logger.debug('deleting user by ID', { _id });
-    validateId(_id);
+    validateInput({ _id });
     const user = await userRepo.updateUser({ _id }, deleteQuery);
     if (!user) {
       throw new NotFoundError({ description: `user with ID '${_id}' does not exist` });
@@ -94,7 +96,7 @@ function validateInput(user) {
   logger.debug('validating user input');
 
   const {
-    email, password, username, roles,
+    email, password, username, roles, _id,
   } = user;
 
   if (email && !validator.isValidEmail(email)) {
@@ -112,10 +114,8 @@ function validateInput(user) {
   if (roles && !validator.isValidRoles(roles)) {
     throw new BadRequestError({ description: 'invalid roles' });
   }
-}
 
-function validateId(id) {
-  if (!validator.isValidId(id)) {
+  if (_id && !validator.isValidId(_id)) {
     throw new BadRequestError({ description: 'invalid ID' });
   }
 }
