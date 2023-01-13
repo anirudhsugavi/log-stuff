@@ -1,4 +1,4 @@
-const { userRepo } = require('../db/repositories');
+const userRepo = require('../db/repositories/user-repository');
 const { BadRequestError, NotFoundError } = require('../util/app-errors');
 const logger = require('../util/logger');
 const validator = require('../validator');
