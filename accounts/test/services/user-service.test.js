@@ -205,3 +205,113 @@ describe('Test get user', () => {
     await expect(getUserPromise).rejects.toThrow('user ID, email, or username is required');
   });
 });
+
+describe('Test delete user', () => {
+  beforeEach(() => setupInputValidators());
+
+  const VALID_ID = '63baee02d0eac03bf99256ce';
+  const INVALID_ID = '123abf';
+  const VALID_EMAIL = 'testuser@logstuff.com';
+  const INVALID_EMAIL = 'invalid@email';
+  const VALID_USERNAME = 'testuser';
+  const INVALID_USERNAME = 'test%^user';
+  const expectedUser = {
+    _id: VALID_ID,
+    email: VALID_EMAIL,
+    username: VALID_USERNAME,
+    name: { first: 'Test', last: 'User' },
+    roles: ['admin'],
+    verified: false,
+    deleted: false,
+  };
+
+  it('ID - invalid format', async () => {
+    validator.isValidId.mockImplementation(() => false);
+
+    const deleteUserPromise = deleteUser({ _id: INVALID_ID });
+    await expect(deleteUserPromise).rejects.toThrowError(BadRequestError);
+    await expect(deleteUserPromise).rejects.toThrow('invalid ID');
+    expect(validator.isValidId).toHaveBeenCalled();
+  });
+
+  it('ID - not found', async () => {
+    userRepo.updateUser.mockImplementation(() => Promise.resolve());
+
+    const deleteUserPromise = deleteUser({ _id: VALID_ID });
+    await expect(deleteUserPromise).rejects.toThrowError(NotFoundError);
+    await expect(deleteUserPromise).rejects.toThrow(`user with ID '${VALID_ID}' does not exist`);
+    expect(userRepo.updateUser).toHaveBeenCalled();
+    expect(validator.isValidId).toHaveBeenCalled();
+  });
+
+  it('ID - success', async () => {
+    userRepo.updateUser.mockImplementation(() => Promise.resolve(expectedUser));
+
+    const deleteUserPromise = deleteUser({ _id: VALID_ID });
+    expect(await deleteUserPromise).toEqual(expectedUser);
+    expect(userRepo.updateUser).toHaveBeenCalled();
+    expect(validator.isValidId).toHaveBeenCalled();
+  });
+
+  it('email - invalid format', async () => {
+    validator.isValidEmail.mockImplementation(() => false);
+
+    const deleteUserPromise = deleteUser({ email: INVALID_EMAIL });
+    await expect(deleteUserPromise).rejects.toThrowError(BadRequestError);
+    await expect(deleteUserPromise).rejects.toThrow('invalid email');
+    expect(validator.isValidEmail).toHaveBeenCalled();
+  });
+
+  it('email - not found', async () => {
+    userRepo.updateUser.mockImplementation(() => Promise.resolve());
+
+    const deleteUserPromise = deleteUser({ email: VALID_EMAIL });
+    await expect(deleteUserPromise).rejects.toThrowError(NotFoundError);
+    await expect(deleteUserPromise).rejects.toThrow(`user with email '${VALID_EMAIL}' does not exist`);
+    expect(userRepo.updateUser).toHaveBeenCalled();
+    expect(validator.isValidEmail).toHaveBeenCalled();
+  });
+
+  it('email - success', async () => {
+    userRepo.updateUser.mockImplementation(() => Promise.resolve(expectedUser));
+
+    const deleteUserPromise = deleteUser({ email: VALID_EMAIL });
+    expect(await deleteUserPromise).toEqual(expectedUser);
+    expect(userRepo.updateUser).toHaveBeenCalled();
+    expect(validator.isValidEmail).toHaveBeenCalled();
+  });
+
+  it('username - invalid format', async () => {
+    validator.isValidUsername.mockImplementation(() => false);
+
+    const deleteUserPromise = deleteUser({ username: INVALID_USERNAME });
+    await expect(deleteUserPromise).rejects.toThrowError(BadRequestError);
+    await expect(deleteUserPromise).rejects.toThrow('special characters not allowed in username');
+    expect(validator.isValidUsername).toHaveBeenCalled();
+  });
+
+  it('username - not found', async () => {
+    userRepo.updateUser.mockImplementation(() => Promise.resolve());
+
+    const deleteUserPromise = deleteUser({ username: VALID_USERNAME });
+    await expect(deleteUserPromise).rejects.toThrowError(NotFoundError);
+    await expect(deleteUserPromise).rejects.toThrow(`user with username '${VALID_USERNAME}' does not exist`);
+    expect(userRepo.updateUser).toHaveBeenCalled();
+    expect(validator.isValidUsername).toHaveBeenCalled();
+  });
+
+  it('username - success', async () => {
+    userRepo.updateUser.mockImplementation(() => Promise.resolve(expectedUser));
+
+    const deleteUserPromise = deleteUser({ username: VALID_USERNAME });
+    expect(await deleteUserPromise).toEqual(expectedUser);
+    expect(userRepo.updateUser).toHaveBeenCalled();
+    expect(validator.isValidUsername).toHaveBeenCalled();
+  });
+
+  it('nothing/invalid key passed', async () => {
+    const deleteUserPromise = deleteUser({});
+    await expect(deleteUserPromise).rejects.toThrowError(BadRequestError);
+    await expect(deleteUserPromise).rejects.toThrow('user ID, email, or username is required');
+  });
+});
