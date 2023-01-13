@@ -73,6 +73,7 @@ async function deleteUser({ _id, email, username }) {
 
   if (email) {
     logger.debug('deleting user by email', { email });
+    validateInput({ email });
     const user = await userRepo.updateUser({ email }, deleteQuery);
     if (!user) {
       throw new NotFoundError({ description: `user with email '${email}' does not exist` });
@@ -82,6 +83,7 @@ async function deleteUser({ _id, email, username }) {
 
   if (username) {
     logger.debug('deleting user by username', { username });
+    validateInput({ username });
     const user = await userRepo.updateUser({ username }, deleteQuery);
     if (!user) {
       throw new NotFoundError({ description: `user with username '${username}' does not exist` });
