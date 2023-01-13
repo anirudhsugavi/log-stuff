@@ -189,4 +189,19 @@ describe('Test get user', () => {
     expect(userRepo.getUser).toHaveBeenCalled();
     expect(validator.isValidUsername).toHaveBeenCalled();
   });
+
+  it('username - success, with password', async () => {
+    userRepo.getUserWithPassword.mockImplementation(() => Promise.resolve({ ...expectedUser, password: 'hashed_pass' }));
+
+    const getUserPromise = getUser({ username: VALID_USERNAME }, true);
+    expect(await getUserPromise).toEqual({ ...expectedUser, password: 'hashed_pass' });
+    expect(userRepo.getUserWithPassword).toHaveBeenCalled();
+    expect(validator.isValidUsername).toHaveBeenCalled();
+  });
+
+  it('nothing/invalid key passed', async () => {
+    const getUserPromise = getUser({});
+    await expect(getUserPromise).rejects.toThrowError(BadRequestError);
+    await expect(getUserPromise).rejects.toThrow('user ID, email, or username is required');
+  });
 });
