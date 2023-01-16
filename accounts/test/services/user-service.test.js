@@ -332,13 +332,15 @@ describe('Test update user', () => {
     expect(validator.isValidId).toHaveBeenCalled();
   });
 
-  it.each([
-    '', null, undefined, 'name', [],
-  ])('when field is "%s"', async (field) => {
-    const updateUserPromise = updateUser(VALID_ID, { fields: field });
-    await expect(updateUserPromise).rejects.toThrowError(BadRequestError);
-    await expect(updateUserPromise).rejects.toThrow('invalid update fields array');
-    expect(validator.isValidId).toHaveBeenCalled();
+  describe('invalid field type', () => {
+    it.each([
+      '', null, undefined, 'name', [],
+    ])('when field is "%s"', async (field) => {
+      const updateUserPromise = updateUser(VALID_ID, { fields: field });
+      await expect(updateUserPromise).rejects.toThrowError(BadRequestError);
+      await expect(updateUserPromise).rejects.toThrow('invalid update fields array');
+      expect(validator.isValidId).toHaveBeenCalled();
+    });
   });
 
   it('invalid upate field', async () => {
@@ -373,13 +375,57 @@ describe('Test update user', () => {
     });
   });
 
-  it('username - successful update', async () => {
+  it('successful update', async () => {
     userRepo.getUser.mockImplementation(() => Promise.resolve({}));
     userRepo.updateUser.mockImplementation(() => Promise.resolve({}));
 
-    const updateUserPromise = updateUser(VALID_ID, { fields: ['username'], username: USERNAME });
+    const updateUserPromise = updateUser(VALID_ID, {
+      fields: ['username', 'name', 'settings'],
+      username: USERNAME,
+      name: {},
+      settings: {},
+    });
     expect(await updateUserPromise).toBeDefined();
     expect(userRepo.getUser).toHaveBeenCalled();
+    expect(userRepo.updateUser).toHaveBeenCalled();
+    expect(validator.isValidUsername).toHaveBeenCalled();
+  });
+
+  it('empty name object', async () => {
+    const nameUpdatePromise = updateUser(VALID_ID, { fields: ['name'] });
+    await expect(nameUpdatePromise).rejects.toThrowError(BadRequestError);
+    await expect(nameUpdatePromise).rejects.toThrow('empty name for update');
+  });
+
+  it('name set & unset', async () => {
+    userRepo.updateUser.mockImplementation(() => Promise.resolve({}));
+
+    const nameUpdatePromise = updateUser(VALID_ID, {
+      fields: ['name'],
+      name: {
+        first: 'test', nick: null, middle: '  ',
+      },
+    });
+    expect(await nameUpdatePromise).toBeDefined();
+    expect(userRepo.updateUser).toHaveBeenCalled();
+  });
+
+  it('empty settings object', async () => {
+    const settingsUpdatePromise = updateUser(VALID_ID, { fields: ['settings'] });
+    await expect(settingsUpdatePromise).rejects.toThrowError(BadRequestError);
+    await expect(settingsUpdatePromise).rejects.toThrow('empty settings for update');
+  });
+
+  it('settings set & unset', async () => {
+    userRepo.updateUser.mockImplementation(() => Promise.resolve({}));
+
+    const settingsUpdatePromise = updateUser(VALID_ID, {
+      fields: ['settings'],
+      settings: {
+        set1: 'test', set2: null, set3: '  ',
+      },
+    });
+    expect(await settingsUpdatePromise).toBeDefined();
     expect(userRepo.updateUser).toHaveBeenCalled();
   });
 });
