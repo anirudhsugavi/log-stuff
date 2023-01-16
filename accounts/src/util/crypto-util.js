@@ -7,10 +7,6 @@ const { EXPIRES_IN, TOKEN_ISSUER } = require('./constants');
 const SALT_ROUND = 10;
 
 const requireNonNull = (...args) => {
-  if (args.length < 1) {
-    throw new BadRequestError({ description: 'insufficient number of arguments', errorStack: new RangeError() });
-  }
-
   args.forEach((arg) => {
     if (arg == null) {
       throw new BadRequestError({ description: 'argument is null/undefined' });
