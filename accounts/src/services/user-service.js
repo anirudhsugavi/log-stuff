@@ -187,6 +187,10 @@ async function getNameQuery(name) {
 async function getSettingsQuery(settings) {
   const settingsToSet = {};
   const settingsToUnset = {};
+  if (!settings) {
+    throw new BadRequestError({ description: 'empty settings for update' });
+  }
+
   Object.entries(settings).forEach(([key, val]) => {
     if (val === null || val.trim().length < 1) {
       settingsToUnset[`settings.${key}`] = val;
@@ -195,7 +199,7 @@ async function getSettingsQuery(settings) {
     }
   });
 
-  return { set: settingsToSet, uset: settingsToUnset };
+  return { set: settingsToSet, unset: settingsToUnset };
 }
 
 function getAggregatedSetAndUnsetQueries(fieldQueries) {
