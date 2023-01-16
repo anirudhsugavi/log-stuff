@@ -315,3 +315,71 @@ describe('Test delete user', () => {
     await expect(deleteUserPromise).rejects.toThrow('user ID, email, or username is required');
   });
 });
+
+describe('Test update user', () => {
+  beforeEach(() => setupInputValidators());
+
+  const VALID_ID = '63baee02d0eac03bf99256ce';
+  const INVALID_ID = '123abf';
+  const USERNAME = 'testuser';
+
+  it('ID - invalid format', async () => {
+    validator.isValidId.mockImplementation(() => false);
+
+    const updateUserPromise = updateUser(INVALID_ID, {});
+    await expect(updateUserPromise).rejects.toThrowError(BadRequestError);
+    await expect(updateUserPromise).rejects.toThrow('invalid ID');
+    expect(validator.isValidId).toHaveBeenCalled();
+  });
+
+  it.each([
+    '', null, undefined, 'name', [],
+  ])('when field is "%s"', async (field) => {
+    const updateUserPromise = updateUser(VALID_ID, { fields: field });
+    await expect(updateUserPromise).rejects.toThrowError(BadRequestError);
+    await expect(updateUserPromise).rejects.toThrow('invalid update fields array');
+    expect(validator.isValidId).toHaveBeenCalled();
+  });
+
+  it('invalid upate field', async () => {
+    const INVALID_FIELD = ['invalid_field'];
+    const updateUserPromise = updateUser(VALID_ID, { fields: INVALID_FIELD });
+    await expect(updateUserPromise).rejects.toThrowError(BadRequestError);
+    await expect(updateUserPromise).rejects.toThrow(`invalid update user field '${INVALID_FIELD}'`);
+    expect(validator.isValidId).toHaveBeenCalled();
+  });
+
+  it('username - not found', async () => {
+    userRepo.getUser.mockImplementation(() => Promise.resolve());
+
+    const updateUserPromise = updateUser(VALID_ID, { fields: ['username'], username: USERNAME });
+    await expect(updateUserPromise).rejects.toThrowError(BadRequestError);
+    await expect(updateUserPromise).rejects.toThrow('user does not exist');
+    expect(validator.isValidId).toHaveBeenCalled();
+    expect(validator.isValidUsername).toHaveBeenCalled();
+  });
+
+  describe('username - default to email', () => {
+    it.each([
+      '', '  ', null, undefined,
+    ])('when username is "%s"', async (username) => {
+      userRepo.getUser.mockImplementation(() => Promise.resolve({ email: 'test@logstuff.com' }));
+      userRepo.updateUser.mockImplementation(() => Promise.resolve({}));
+
+      const updateUserPromise = updateUser(VALID_ID, { fields: ['username'], username });
+      expect(await updateUserPromise).toBeDefined();
+      expect(userRepo.getUser).toHaveBeenCalled();
+      expect(userRepo.updateUser).toHaveBeenCalled();
+    });
+  });
+
+  it('username - successful update', async () => {
+    userRepo.getUser.mockImplementation(() => Promise.resolve({}));
+    userRepo.updateUser.mockImplementation(() => Promise.resolve({}));
+
+    const updateUserPromise = updateUser(VALID_ID, { fields: ['username'], username: USERNAME });
+    expect(await updateUserPromise).toBeDefined();
+    expect(userRepo.getUser).toHaveBeenCalled();
+    expect(userRepo.updateUser).toHaveBeenCalled();
+  });
+});

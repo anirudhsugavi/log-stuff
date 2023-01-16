@@ -46,6 +46,7 @@ async function createUser(user) {
 async function updateUser(_id, {
   fields, email, password, username, name, avatar, settings,
 }) {
+  validateInput({ _id });
   if (!fields || !Array.isArray(fields) || fields.length < 1) {
     throw new BadRequestError({ description: 'invalid update fields array' });
   }
@@ -158,7 +159,7 @@ async function getUsernameQuery(_id, username) {
 
   const user = await userRepo.getUser({ _id });
   if (!user) {
-    throw new BadRequestError('user does not exist');
+    throw new BadRequestError({ description: 'user does not exist' });
   }
 
   const toUpdateUsername = (!username || !username.trim()) ? user.email : username;
