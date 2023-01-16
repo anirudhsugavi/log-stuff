@@ -1,6 +1,7 @@
 const { JsonWebTokenError } = require('jsonwebtoken');
+const { ValidationError } = require('mongoose').Error;
 const { AppError } = require('../util/app-errors');
-const { BAD_REQUEST, INTERNAL } = require('../util/constants');
+const { BAD_REQUEST, INTERNAL, UNAUTHENTICATED } = require('../util/constants');
 const logger = require('../util/logger');
 
 async function errorLogger(err, req, _res, next) {
@@ -18,7 +19,7 @@ async function errorHandler(err, _req, res, _next) {
 
   // handle jwt error
   if (err instanceof JsonWebTokenError) {
-    res.status(BAD_REQUEST).json({ errors: { message: err.message } });
+    res.status(UNAUTHENTICATED).json({ errors: { message: err.message } });
     return;
   }
 
@@ -28,14 +29,19 @@ async function errorHandler(err, _req, res, _next) {
     return;
   }
 
-  // handle validation errors
-  if (err.message.includes('user validation failed')) {
+  // handle mongoose validation errors
+  if (err instanceof ValidationError) {
     const messages = {};
     Object.values(err.errors).forEach(({ properties }) => {
       messages[properties.path] = properties.message;
     });
 
     res.status(BAD_REQUEST).json({ errors: messages });
+    return;
+  }
+
+  if (err instanceof SyntaxError) {
+    res.status(BAD_REQUEST).json({ errors: { message: err.message } });
     return;
   }
 

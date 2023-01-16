@@ -1,4 +1,5 @@
 const { Schema } = require('mongoose');
+const { hashPassword } = require('../util/crypto-util');
 
 const NameSchema = new Schema({
   first: { type: String },
@@ -23,6 +24,13 @@ const UserSchema = new Schema({
   avatar: { type: String },
   settings: { type: Map, of: String },
   deleted: { type: Boolean, default: false },
+});
+
+UserSchema.pre('save', async function save(next) {
+  this.verified = false;
+  this.deleted = false;
+  this.password = await hashPassword(this.password);
+  next();
 });
 
 module.exports = {

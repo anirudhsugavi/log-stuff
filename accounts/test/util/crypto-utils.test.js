@@ -51,7 +51,7 @@ describe('JWT validation', () => {
   });
 
   it.each([
-    '', '   ', undefined, null,
+    '', '   ', 'not_secret', undefined, null,
   ])('when secret is "%s"', (secret) => {
     expect(() => generateJwt({ id: '123', secret, roles: [] })).toThrowError(BadRequestError);
   });

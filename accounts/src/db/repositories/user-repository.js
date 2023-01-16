@@ -5,20 +5,23 @@ async function createUser(user) {
 }
 
 async function getUser(getQuery) {
-  return User.findOne(getQuery);
+  const query = { ...getQuery, deleted: false };
+  return User.findOne(query).select('-password');
 }
 
-async function updateUser(_id, updateQuery) {
-  return User.findByIdAndUpdate(_id, updateQuery, { new: true, runValidators: true });
+async function getUserWithPassword(getQuery) {
+  const query = { ...getQuery, deleted: false };
+  return User.findOne(query);
 }
 
-async function getAllUsers() {
-  return User.find({});
+async function updateUser(filter, updateQuery) {
+  const filterQuery = { ...filter, deleted: false };
+  return User.findOneAndUpdate(filterQuery, updateQuery, { new: true, runValidators: true }).select('-password');
 }
 
 module.exports = {
   createUser,
   getUser,
+  getUserWithPassword,
   updateUser,
-  getAllUsers,
 };

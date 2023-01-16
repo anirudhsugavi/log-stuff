@@ -3,12 +3,12 @@ const { EXPIRES_IN, TOKEN_ISSUER, TOKEN_TYPE } = require('../util/constants');
 const { comparePassword, generateJwt, verifyJwt } = require('../util/crypto-util');
 const { JWT_SECRET } = require('../util/properties-loader');
 const { isValidRoles } = require('../validator');
-const userService = require('./user-service');
+const { getUser } = require('./user-service');
 
 async function createToken({
   _id, email, username, password, requiredRoles,
 }) {
-  const user = await userService.getUser({ _id, email, username });
+  const user = await getUser({ _id, email, username }, true);
   const result = await comparePassword(password, user.password);
   if (!result) {
     throw new BadRequestError({ description: 'incorrect password' });

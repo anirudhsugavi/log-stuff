@@ -7,8 +7,9 @@ const props = require('./util/properties-loader');
 const logger = require('./util/logger');
 const { errorHandler, errorLogger } = require('./middleware/error-handler');
 
-connect()
-  .then(() => {
+async function startAuthServer() {
+  try {
+    await connect();
     const app = express();
 
     app.use(express.json());
@@ -31,22 +32,23 @@ connect()
       logger.debug('Exiting Auth Server');
       exitApp();
     });
-  })
-  .catch((err) => {
+  } catch (err) {
     logger.error('Failed to start Auth Server.', err);
     exitApp();
-  });
+  }
+}
 
-function exitApp() {
-  disconnect()
-    .then(() => {
-      logger.debug('Disconnected from DB');
-      process.exit();
-    })
-    .catch((err) => {
-      logger.error('Error closing db connection', err);
-      process.exit();
-    });
+async function exitApp() {
+  try {
+    await disconnect();
+    logger.debug('Disconnected from DB');
+    process.exit();
+  } catch (err) {
+    logger.error('Error closing db connection', err);
+    process.exit();
+  }
 }
 
 process.on('SIGINT', exitApp);
+
+startAuthServer();

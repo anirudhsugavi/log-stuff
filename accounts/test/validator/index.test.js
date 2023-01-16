@@ -40,7 +40,7 @@ describe('Username validator', () => {
 
 describe('Roles validator', () => {
   it.each([
-    [['invalid']], [['']], [['InVaLID', 'NOPE']], null, undefined,
+    [['invalid']], [['']], [['InVaLID', 'NOPE']], [[]], null, undefined,
   ])('when roles is "%s"', (roles) => {
     expect(isValidRoles(roles)).toBeFalsy();
   });
