@@ -1,4 +1,3 @@
-const { verifyEmail, sendVerificationEmail } = require('../services/mail-service');
 const userService = require('../services/user-service');
 const { UnauthorizedError } = require('../util/app-errors');
 const { CREATED, NO_CONTENT } = require('../util/constants');
@@ -15,9 +14,6 @@ async function getUser(req, res, next) {
     verifyAuthenticatedUser(req.userId, req.params.userId);
     const user = await userService.getUser({ _id: req.params.userId });
     res.json(user);
-    await sendVerificationEmail({
-      email: user.email, id: user.id, roles: user.roles, hostname: `${req.protocol}://${req.headers.host}`,
-    });
   } catch (err) {
     next(err);
   }
@@ -55,16 +51,6 @@ async function updateUser(req, res, next) {
   }
 }
 
-async function verifyUser(req, res, next) {
-  logger.info('verifying user email');
-  try {
-    verifyEmail(req.query.token);
-    res.status(NO_CONTENT).send();
-  } catch (err) {
-    next(err);
-  }
-}
-
 function verifyAuthenticatedUser(authenticatedUserId, requestUserId) {
   if (authenticatedUserId !== requestUserId) {
     throw new UnauthorizedError({ description: 'authenticated user does not have access to this resource' });
@@ -77,5 +63,4 @@ module.exports = {
   deleteUser,
   createUser,
   updateUser,
-  verifyUser,
 };
