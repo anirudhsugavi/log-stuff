@@ -1,5 +1,6 @@
 const userRepo = require('../db/repositories/user-repository');
 const { BadRequestError, NotFoundError } = require('../util/app-errors');
+const { comparePassword, hashPassword } = require('../util/crypto-util');
 const logger = require('../util/logger');
 const validator = require('../validator');
 
@@ -123,7 +124,7 @@ function validateInput(user) {
   }
 }
 
-async function getUserHelper(filter, fetchPassword) {
+async function getUserHelper(filter, fetchPassword = false) {
   return fetchPassword ? userRepo.getUserWithPassword(filter) : userRepo.getUser(filter);
 }
 
@@ -132,13 +133,9 @@ async function getUpdateQueryByField({
 }) {
   switch (field) {
     case 'email':
-      // todo
-      email.trim();
-      throw new BadRequestError({ description: 'update email coming soon' });
+      return getEmailQuery(_id, email);
     case 'password':
-      // todo
-      password.trim();
-      throw new BadRequestError({ description: 'update password coming soon' });
+      return getPasswordQuery(_id, password);
     case 'username':
       return getUsernameQuery(_id, username);
     case 'name':
@@ -152,6 +149,34 @@ async function getUpdateQueryByField({
     default:
       throw new BadRequestError({ description: `invalid update user field '${field}'` });
   }
+}
+
+async function getEmailQuery(_id, email) {
+  if (!email) {
+    throw new BadRequestError({ description: 'empty email for update' });
+  }
+
+  validateInput({ email });
+  const user = await getUserHelper({ _id }, false);
+  if (email === user.email) {
+    throw new BadRequestError({ description: 'email must be different' });
+  }
+
+  return { set: { email }, unset: {} };
+}
+
+async function getPasswordQuery(_id, password) {
+  if (!password) {
+    throw new BadRequestError({ description: 'empty password for update' });
+  }
+
+  validateInput({ password });
+  const user = await getUserHelper({ _id }, true);
+  if (await comparePassword(password, user.password)) {
+    throw new BadRequestError({ description: 'password must be different' });
+  }
+
+  return { set: { password: await hashPassword(password) }, unset: {} };
 }
 
 async function getUsernameQuery(_id, username) {
