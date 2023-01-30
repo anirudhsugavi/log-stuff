@@ -4,9 +4,11 @@ const {
 const { BadRequestError, NotFoundError } = require('../../src/util/app-errors');
 const userRepo = require('../../src/db/repositories/user-repository');
 const validator = require('../../src/validator');
+const crypto = require('../../src/util/crypto-util');
 
 jest.mock('../../src/db/repositories/user-repository');
 jest.mock('../../src/validator');
+jest.mock('../../src/util/crypto-util');
 
 function setupInputValidators() {
   validator.isValidEmail.mockImplementation(() => true);
@@ -427,5 +429,76 @@ describe('Test update user', () => {
     });
     expect(await settingsUpdatePromise).toBeDefined();
     expect(userRepo.updateUser).toHaveBeenCalled();
+  });
+
+  describe('email update', () => {
+    it('empty email', async () => {
+      const emailUpdatePromise = updateUser(VALID_ID, { fields: ['email'] });
+      await expect(emailUpdatePromise).rejects.toThrowError(BadRequestError);
+      await expect(emailUpdatePromise).rejects.toThrow('empty email for update');
+      expect(validator.isValidEmail).not.toHaveBeenCalled();
+    });
+
+    it('same email', async () => {
+      const VALID_EMAIL = 'testuser@logstuff.com';
+      userRepo.getUser.mockImplementation(() => Promise.resolve({ email: VALID_EMAIL }));
+      const emailUpdatePromise = updateUser(VALID_ID, {
+        fields: ['email'], email: VALID_EMAIL,
+      });
+      await expect(emailUpdatePromise).rejects.toThrowError(BadRequestError);
+      await expect(emailUpdatePromise).rejects.toThrowError('email must be different');
+      expect(validator.isValidEmail).toHaveBeenCalled();
+      expect(userRepo.getUser).toHaveBeenCalled();
+    });
+
+    it('successful email update', async () => {
+      userRepo.getUser.mockImplementation(() => Promise.resolve({ email: 'testuser@logstuff.com' }));
+      userRepo.updateUser.mockImplementation(() => Promise.resolve({}));
+      const emailUpdatePromise = updateUser(VALID_ID, {
+        fields: ['email'], email: 'testuser_updated@logstuff.com',
+      });
+      expect(await emailUpdatePromise).toBeDefined();
+      expect(validator.isValidEmail).toHaveBeenCalled();
+      expect(userRepo.getUser).toHaveBeenCalled();
+      expect(userRepo.updateUser).toHaveBeenCalled();
+    });
+  });
+
+  describe('password update', () => {
+    it('empty password', async () => {
+      const passUpdatePromise = updateUser(VALID_ID, { fields: ['password'] });
+      await expect(passUpdatePromise).rejects.toThrowError(BadRequestError);
+      await expect(passUpdatePromise).rejects.toThrow('empty password for update');
+      expect(validator.isStrongPassword).not.toHaveBeenCalled();
+    });
+
+    it('same password', async () => {
+      userRepo.getUserWithPassword.mockImplementation(() => Promise.resolve({ password: 'same_pass' }));
+      crypto.comparePassword.mockImplementation(() => Promise.resolve(true));
+      const passUpdatePromise = updateUser(VALID_ID, {
+        fields: ['password'], password: 'same_pass',
+      });
+      await expect(passUpdatePromise).rejects.toThrowError(BadRequestError);
+      await expect(passUpdatePromise).rejects.toThrow('password must be different');
+      expect(validator.isStrongPassword).toHaveBeenCalled();
+      expect(userRepo.getUserWithPassword).toHaveBeenCalled();
+      expect(crypto.comparePassword).toHaveBeenCalled();
+    });
+
+    it('successful password update', async () => {
+      userRepo.getUserWithPassword.mockImplementation(() => Promise.resolve({ password: 'old_pass' }));
+      userRepo.updateUser.mockImplementation(() => Promise.resolve({}));
+      crypto.comparePassword.mockImplementation(() => Promise.resolve(false));
+      crypto.hashPassword.mockImplementation(() => Promise.resolve('hashed_pass'));
+      const passUpdatePromise = updateUser(VALID_ID, {
+        fields: ['password'], password: 'new_pass',
+      });
+      expect(await passUpdatePromise).toBeDefined();
+      expect(validator.isStrongPassword).toHaveBeenCalled();
+      expect(userRepo.getUserWithPassword).toHaveBeenCalled();
+      expect(userRepo.updateUser).toHaveBeenCalled();
+      expect(crypto.comparePassword).toHaveBeenCalled();
+      expect(crypto.hashPassword).toHaveBeenCalled();
+    });
   });
 });
