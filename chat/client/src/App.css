@@ -26,8 +26,7 @@
 
 .message-container {
   overflow-y: auto;
-  max-height: 100vh;
+  height: 90vh;
   max-width: 1200px;
-  min-height: 200px;
   border: 1px solid yellow;
 }
