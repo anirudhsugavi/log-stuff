@@ -1,5 +1,6 @@
 .App {
   text-align: center;
+  background-color: #121212;
 }
 
 .App-logo {
@@ -21,4 +22,12 @@
 @keyframes App-logo-spin {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
+}
+
+.message-container {
+  overflow-y: auto;
+  max-height: 100vh;
+  max-width: 1200px;
+  min-height: 200px;
+  border: 1px solid yellow;
 }
